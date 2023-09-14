@@ -1,16 +1,16 @@
 package ru.eleventh.svmd.model
 
-import Point
 import ru.eleventh.svmd.model.enums.Lang
 import ru.eleventh.svmd.model.enums.TileProvider
 import java.time.Instant
 
 data class Meta(
-    val identifier: String, // example: W92S5539T
+    val identifier: String,
     val title: String,
 
-    val center: Point?,
-    val bounds: Pair<Point, Point>?,
+//    val dsd: BoundingBox,
+//    val center: FeatureCollection,
+//    val bounds: Pair<Point, Point>?,
 
     val createdAt: Instant,
     val modifiedAt: Instant,

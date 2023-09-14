@@ -1,6 +1,7 @@
 package ru.eleventh.svmd
 
 
+import Position
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.serialization.jackson.*
@@ -8,9 +9,7 @@ import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import ru.eleventh.svmd.model.Meta
-import ru.eleventh.svmd.model.enums.TileProvider
-import java.time.Instant
+import ru.eleventh.svmd.services.dao
 
 fun Application.configureRouting() {
     install(ContentNegotiation) {
@@ -22,25 +21,9 @@ fun Application.configureRouting() {
     }
     routing {
         route("api") {
-            get("map/{mapId}") {
-                val mapId = call.parameters["mapId"]!!
-                call.respond(
-                    Meta(
-                        mapId,
-                        "Безымянная карта",
-                        null,
-                        null,
-                        Instant.now(),
-                        Instant.now(),
-                        "0.1",
-                        null,
-                        null,
-                        null,
-                        null,
-                        TileProvider.DARK
-                    )
-                )
-            }
+            get("maps/") { call.respond(dao.getMaps()) }
+            get("maps/{mapId}") { call.respond(dao.getMapByIdentifier(call.parameters["mapId"]!!.toUpperCase())!!) }
+            post("maps/") { call.respond(dao.createMap(Position(44.51, 40.17))!!) }
         }
     }
 }

@@ -1,77 +1,81 @@
 package ru.eleventh.svmd.services
 
-import io.ktor.util.logging.*
-import org.jetbrains.kotlin.konan.properties.loadProperties
-import java.sql.Connection
-import java.sql.DriverManager
-import java.sql.SQLException
-import java.sql.Statement
-import java.util.*
+import Position
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
+import ru.eleventh.svmd.DatabaseConnection.dbQuery
+import ru.eleventh.svmd.model.db.MapMeta
+import ru.eleventh.svmd.model.db.MapsTable
+import ru.eleventh.svmd.model.db.User
+import ru.eleventh.svmd.model.db.UsersTable
+import java.time.Instant
 
-object PersistenceService {
+val dao = PersistenceService()
 
-    private val logger = KtorSimpleLogger(PersistenceService.javaClass.name)
+class PersistenceService {
 
-    private val appConfig: Properties = loadProperties("src/main/resources/application.properties")
-    private val databasePath = appConfig.getProperty("svmd.db.path")
+    private val mapper = jacksonObjectMapper()
+    // TODO: sane (de)serialization
 
-    private lateinit var connection: Connection
-
-    private fun initSchema() = run {
-        val statement: Statement = connection.createStatement()
-
-        statement.executeUpdate(
-            "CREATE TABLE users(\n" +
-                    "    id          INTEGER     PRIMARY KEY AUTOINCREMENT,\n" +
-                    "    email       VARCHAR     NOT NULL    UNIQUE,\n" +
-                    "    password    VARCHAR     NOT NULL\n" +
-                    ")"
-        )
-        statement.executeUpdate(
-            "CREATE TABLE spreadsheets(\n" +
-                    "    id          INTEGER     PRIMARY KEY    AUTOINCREMENT,\n" +
-                    "    identifier  VARCHAR     NOT NULL       UNIQUE,\n" +
-                    "    raw_csv     TEXT        NOT NULL,\n" +
-                    "    geojson     TEXT        NOT NULL,\n" +
-                    "    updated_at  TIMESTAMP   NOT NULL\n" +
-                    ")"
-        )
-
-        statement.executeUpdate(
-            "CREATE TABLE maps(\n" +
-                    "    id              INTEGER     PRIMARY KEY AUTOINCREMENT,\n" +
-                    "    identifier      VARCHAR     NOT NULL,\n" +
-                    "    center          VARCHAR,\n" +
-                    "    bounds          VARCHAR,\n" +
-                    "    createdAt       TIMESTAMP,\n" +
-                    "    modifiedAt      TIMESTAMP,\n" +
-                    "    svmdVersion     VARCHAR,\n" +
-                    "    lang            VARCHAR,\n" +
-                    "    logo            VARCHAR,\n" +
-                    "    lang            VARCHAR,\n" +
-                    "    spreadsheet_id  INTEGER,\n" +
-                    "    owner_id        INTEGER,\n" +
-                    "FOREIGN KEY (owner_id) REFERENCES users(id),\n" +
-                    "FOREIGN KEY (spreadsheet_id) REFERENCES spreadsheets(id)\n" +
-                    ")"
+    private fun toMap(row: ResultRow): MapMeta {
+        val res: Position = mapper.readValue(row[MapsTable.center].orEmpty())
+        return MapMeta(
+            id = row[MapsTable.id],
+            identifier = row[MapsTable.identifier],
+            center = res,
+            createdAt = row[MapsTable.createdAt]
         )
     }
 
-    fun init() = run {
-        try {
-            connection = DriverManager.getConnection("jdbc:sqlite:$databasePath")
-            val statement: Statement = connection.createStatement()
+    private fun toUser(row: ResultRow): User {
+        return User(
+            id = row[UsersTable.id],
+            email = row[UsersTable.email],
+        )
+    }
 
-            val isDbInitialized = statement.execute("SELECT * FROM sqlite_master WHERE type='table' AND name='users'")
-            if (!isDbInitialized) initSchema()
-        } catch (e: SQLException) {
-            logger.error(e.message)
-        } finally {
-            try {
-                connection.close()
-            } catch (e: SQLException) {
-                logger.error(e.message)
+    suspend fun getMaps(): List<MapMeta> = dbQuery {
+        MapsTable.selectAll().map(this::toMap)
+    }
+
+    suspend fun getMapByIdentifier(identifier: String): MapMeta? = dbQuery {
+        MapsTable
+            .select { MapsTable.identifier eq identifier }
+            .map(this::toMap)
+            .singleOrNull()
+    }
+
+    suspend fun createMap(mapCenter: Position): MapMeta? {
+        val insertStatement = dbQuery {
+            MapsTable.insert {
+                it[identifier] = MapService.generateIdentifier()
+                it[center] = mapper.writeValueAsString(mapCenter)
+                it[createdAt] = Instant.now()
             }
         }
+        return insertStatement.resultedValues?.singleOrNull()?.let(this::toMap)
+    }
+
+    suspend fun getUsers(): List<User> = dbQuery {
+        MapsTable.selectAll().map(this::toUser)
+    }
+
+    suspend fun getUserById(userId: Long): User? = dbQuery {
+        UsersTable
+            .select { UsersTable.id eq userId }
+            .map(this::toUser)
+            .singleOrNull()
+    }
+
+    suspend fun createUser(userEmail: String): User? {
+        val insertStatement = dbQuery {
+            UsersTable.insert { it[email] = userEmail }
+        }
+        return insertStatement.resultedValues?.singleOrNull()?.let(this::toUser)
     }
 }
+
