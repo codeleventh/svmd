@@ -1,6 +1,6 @@
 package ru.eleventh.svmd.model.enums
 
-enum class Directive(val directive: String) {
+enum class Directive(directive: String) {
     NAME("#NAME"),
     COLOR("#COLOR"),
     COORDINATES("#COORDINATES"),
