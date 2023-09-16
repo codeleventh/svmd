@@ -22,9 +22,8 @@ class PersistenceService {
     // TODO: sane (de)serialization
 
     private fun toMap(row: ResultRow): MapMeta {
-        val res: Position = mapper.readValue(row[MapsTable.center].orEmpty())
+        val res: Position? = row[MapsTable.center]?.let { mapper.readValue(it) }
         return MapMeta(
-            id = row[MapsTable.id],
             identifier = row[MapsTable.identifier],
             center = res,
             createdAt = row[MapsTable.createdAt]

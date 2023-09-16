@@ -13,10 +13,9 @@ data class MapMeta(
 )
 
 object MapsTable : Table() {
-    val id = long("id").autoIncrement()
     val identifier = text("identifier")
     val center = text("center").nullable()
     val createdAt = timestamp("created_at")
 
-    override val primaryKey = PrimaryKey(id)
+    override val primaryKey = PrimaryKey(identifier)
 }
