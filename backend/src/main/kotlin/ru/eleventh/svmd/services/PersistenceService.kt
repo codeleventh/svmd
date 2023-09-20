@@ -3,15 +3,9 @@ package ru.eleventh.svmd.services
 import Position
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
 import ru.eleventh.svmd.DatabaseConnection.dbQuery
-import ru.eleventh.svmd.model.db.MapMeta
-import ru.eleventh.svmd.model.db.MapsTable
-import ru.eleventh.svmd.model.db.User
-import ru.eleventh.svmd.model.db.UsersTable
+import ru.eleventh.svmd.model.db.*
 import java.time.Instant
 
 val dao = PersistenceService()
@@ -37,44 +31,57 @@ class PersistenceService {
         )
     }
 
+    suspend fun createMap(newIdentifier: String, newMap: NewMapMeta): String? {
+        val insertStatement = dbQuery {
+            MapsTable.insert {
+                it[identifier] = newIdentifier
+                it[center] = mapper.writeValueAsString(newMap.center)
+                it[createdAt] = Instant.now()
+            }
+        }
+        return insertStatement.resultedValues?.singleOrNull()?.let(this::toMap)?.identifier
+    }
+
     suspend fun getMaps(): List<MapMeta> = dbQuery {
         MapsTable.selectAll().map(this::toMap)
     }
 
-    suspend fun getMapByIdentifier(identifier: String): MapMeta? = dbQuery {
+    suspend fun getMap(identifier: String): MapMeta? = dbQuery {
         MapsTable
             .select { MapsTable.identifier eq identifier }
             .map(this::toMap)
             .singleOrNull()
     }
 
-    suspend fun createMap(mapCenter: Position): MapMeta? {
-        val insertStatement = dbQuery {
-            MapsTable.insert {
-                it[identifier] = MapService.generateIdentifier()
-                it[center] = mapper.writeValueAsString(mapCenter)
-                it[createdAt] = Instant.now()
-            }
+
+    suspend fun updateMap(map: MapMeta): Unit = dbQuery {
+        MapsTable.update({ MapsTable.identifier eq map.identifier }) {
+            it[center] = mapper.writeValueAsString(map.center)
         }
-        return insertStatement.resultedValues?.singleOrNull()?.let(this::toMap)
+    }
+
+    suspend fun createUser(newUser: NewUser): Long? {
+        val insertStatement = dbQuery {
+            UsersTable.insert { it[email] = newUser.email }
+        }
+        return insertStatement.resultedValues?.singleOrNull()?.let(this::toUser)?.id
     }
 
     suspend fun getUsers(): List<User> = dbQuery {
-        MapsTable.selectAll().map(this::toUser)
+        UsersTable.selectAll().map(this::toUser)
     }
 
-    suspend fun getUserById(userId: Long): User? = dbQuery {
+    suspend fun getUser(id: Long): User? = dbQuery {
         UsersTable
-            .select { UsersTable.id eq userId }
+            .select { UsersTable.id eq id }
             .map(this::toUser)
             .singleOrNull()
     }
 
-    suspend fun createUser(userEmail: String): User? {
-        val insertStatement = dbQuery {
-            UsersTable.insert { it[email] = userEmail }
+    suspend fun updateUser(user: User): Unit = dbQuery {
+        UsersTable.update({ UsersTable.id eq user.id }) {
+            it[email] = user.email
         }
-        return insertStatement.resultedValues?.singleOrNull()?.let(this::toUser)
     }
 }
 

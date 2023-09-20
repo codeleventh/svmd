@@ -1,5 +1,11 @@
 package ru.eleventh.svmd.services
 
+import ru.eleventh.svmd.model.db.MapMeta
+import ru.eleventh.svmd.model.db.NewMapMeta
+import java.time.Instant
+import kotlin.math.absoluteValue
+import kotlin.random.Random
+
 object MapService {
 
     private const val UPPER_BOUND = 1099511627776 // (2^4)^8
@@ -19,13 +25,16 @@ object MapService {
         return ZEROS_STR.take(8 - string.length) + string
     }
 
-    fun generateIdentifier(): String = newIdentifier() // TODO: isExist check
+    // TODO: error handlers + ids comparing + spreadsheetId validation
 
-    fun createMap(): Nothing = TODO()
+    suspend fun createMap(newMap: NewMapMeta): String? = dao.createMap(newIdentifier(), newMap)
 
-    fun getMap(spreadSheetId: String): Nothing = TODO()
+    suspend fun getMaps(): List<MapMeta> = dao.getMaps()
 
-    fun updateMap(): Nothing = TODO()
+    suspend fun getMapsByUser(): Nothing = TODO()
 
-    fun deleteMap(): Nothing = TODO()
+    suspend fun getMap(identifier: String): MapMeta? = dao.getMap(identifier)
+
+    suspend fun updateMap(identifier: String, map: MapMeta): Unit = dao.updateMap(map)
+
 }

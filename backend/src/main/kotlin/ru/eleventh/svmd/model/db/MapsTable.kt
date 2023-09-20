@@ -5,9 +5,10 @@ import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.timestamp
 import java.time.Instant
 
+data class NewMapMeta(val center: Position?)
+
 data class MapMeta(
-    val id: Long,
-    val identifier: String, // example: W92S5539T
+    val identifier: String, // example: W92S553T
     val center: Position?,
     val createdAt: Instant
 )
