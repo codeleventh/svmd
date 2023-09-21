@@ -17,16 +17,16 @@ object CacheService {
     private val client = HttpClient(CIO) { followRedirects = true }
 
     private val cache = HashMap<String, Pair<Instant, String>>()
-    private val lifetime = appConfig.getProperty("svmd.cache.lifetime").toLong()
+    private val cacheLifetime = appConfig.getProperty("svmd.cache.lifetime").toLong()
 
     suspend fun getSpreadsheet(spreadsheetId: String): String {
         val cachedSpreadsheet = cache[spreadsheetId]
-        return (if (cachedSpreadsheet?.first?.isAfter(now().minusMillis(lifetime)) == true)
+        return (if (cachedSpreadsheet?.first?.isAfter(now().minusMillis(cacheLifetime)) == true)
             cachedSpreadsheet.second
         else {
-            val newSpreasheet = downloadSpreadsheet(spreadsheetId)
-            cache[spreadsheetId] = Pair(now(), newSpreasheet)
-            newSpreasheet
+            val newSpreadsheet = downloadSpreadsheet(spreadsheetId)
+            cache[spreadsheetId] = Pair(now(), newSpreadsheet)
+            newSpreadsheet
         })
     }
 

@@ -12,6 +12,15 @@ data class MapMeta(
     val spreadsheetId: String,
     val center: Position?,
     val createdAt: Instant
+    // val title: String,
+    // val bounds: BoundingBox?,
+    // val modifiedAt: Instant,
+    // val svmdVersion: String,
+    // val lang: Lang?,
+    // val logo: Link?,
+    // val link: Link?,
+    // val defaultColor: Color?,
+    // val tileProvider: TileProvider,
 )
 
 object MapsTable : Table() {

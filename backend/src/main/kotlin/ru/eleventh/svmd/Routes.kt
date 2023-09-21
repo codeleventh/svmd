@@ -3,20 +3,26 @@ package ru.eleventh.svmd
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.jetbrains.kotlin.konan.properties.loadProperties
 import ru.eleventh.svmd.model.db.MapMeta
 import ru.eleventh.svmd.model.db.NewMapMeta
 import ru.eleventh.svmd.model.db.NewUser
 import ru.eleventh.svmd.model.db.User
 import ru.eleventh.svmd.services.MapService
 import ru.eleventh.svmd.services.UserService
+import java.util.*
 
 fun Application.configureRouting() {
+    val appConfig: Properties = loadProperties("src/main/resources/application.properties")
+    val cacheLifetime = appConfig.getProperty("svmd.cache.lifetime").toLong()
+
     install(ContentNegotiation) {
         jackson {
             enable(SerializationFeature.INDENT_OUTPUT)
@@ -39,7 +45,10 @@ fun Application.configureRouting() {
                 }
             }
             route("map/{mapId}") {
-                get { call.respond(MapService.convertMap(call.parameters["mapId"]!!.uppercase())) }
+                get {
+                    call.response.header(HttpHeaders.CacheControl, cacheLifetime)
+                    call.respond(MapService.convertMap(call.parameters["mapId"]!!.uppercase()))
+                }
             }
             route("user") {
                 post { call.respond(UserService.createUser(call.receive<NewUser>())!!) }
