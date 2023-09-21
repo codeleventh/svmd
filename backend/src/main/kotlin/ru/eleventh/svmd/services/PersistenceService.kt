@@ -20,6 +20,7 @@ class PersistenceService {
         return MapMeta(
             identifier = row[MapsTable.identifier],
             center = res,
+            spreadsheetId = row[MapsTable.spreadsheetId],
             createdAt = row[MapsTable.createdAt]
         )
     }
@@ -36,6 +37,7 @@ class PersistenceService {
             MapsTable.insert {
                 it[identifier] = newIdentifier
                 it[center] = mapper.writeValueAsString(newMap.center)
+                it[spreadsheetId] = newMap.spreadsheetId
                 it[createdAt] = Instant.now()
             }
         }

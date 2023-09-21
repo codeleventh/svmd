@@ -37,4 +37,10 @@ object MapService {
 
     suspend fun updateMap(identifier: String, map: MapMeta): Unit = dao.updateMap(map)
 
+    suspend fun convertMap(identifier: String): String {
+        val map = getMap(identifier)!!
+        val spreadsheet = CacheService.getSpreadsheet(map.spreadsheetId)
+        return TransformService.transform(spreadsheet)
+    }
+
 }

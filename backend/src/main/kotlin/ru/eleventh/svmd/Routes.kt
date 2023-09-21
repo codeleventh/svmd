@@ -27,7 +27,7 @@ fun Application.configureRouting() {
     routing {
         // TODO: null checks
         route("api") {
-            route("maps") {
+            route("meta") {
                 post { call.respond(MapService.createMap(call.receive<NewMapMeta>())!!) }
                 get { call.respond(MapService.getMaps()) }
                 get("{mapId}") {
@@ -38,7 +38,10 @@ fun Application.configureRouting() {
                     call.respond(MapService.updateMap(call.parameters["mapId"]!!.uppercase(), meta))
                 }
             }
-            route("users") {
+            route("map/{mapId}") {
+                get { call.respond(MapService.convertMap(call.parameters["mapId"]!!.uppercase())) }
+            }
+            route("user") {
                 post { call.respond(UserService.createUser(call.receive<NewUser>())!!) }
                 get { call.respond(UserService.getUsers()) }
                 get("{id}") {
