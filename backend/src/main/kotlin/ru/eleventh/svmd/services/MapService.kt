@@ -1,7 +1,11 @@
 package ru.eleventh.svmd.services
 
+import ru.eleventh.svmd.exceptions.TransformException
 import ru.eleventh.svmd.model.db.MapMeta
 import ru.eleventh.svmd.model.db.NewMapMeta
+import ru.eleventh.svmd.model.responses.MapResponse
+import ru.eleventh.svmd.model.responses.MapResponseFail
+import ru.eleventh.svmd.model.responses.MapResponseSuccess
 import java.time.Instant
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -35,12 +39,21 @@ object MapService {
 
     suspend fun getMap(identifier: String): MapMeta? = dao.getMap(identifier)
 
+    suspend fun getSpreadsheetId(mapId: String): String? = dao.getSpreadsheetId(mapId)
+
     suspend fun updateMap(identifier: String, map: MapMeta): Unit = dao.updateMap(map)
 
-    suspend fun convertMap(identifier: String): String {
-        val map = getMap(identifier)!!
-        val spreadsheet = CacheService.getSpreadsheet(map.spreadsheetId)
-        return TransformService.transform(spreadsheet)
+    suspend fun convertMap(identifier: String): MapResponse {
+        val metadata = getMap(identifier)!!
+        val spreadsheetId = getSpreadsheetId(identifier)!!
+        val spreadsheet = CacheService.getSpreadsheet(spreadsheetId)
+
+        return try {
+            val result = TransformService.transform(spreadsheet)
+            MapResponseSuccess(result.warns, metadata, result.directivesMap, result.geojson)
+        } catch (e: TransformException) {
+            MapResponseFail(e.errors)
+        }
     }
 
 }

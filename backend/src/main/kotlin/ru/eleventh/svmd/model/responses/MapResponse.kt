@@ -1,24 +1,36 @@
 package ru.eleventh.svmd.model.responses
 
-import FeatureCollection
-import ru.eleventh.svmd.model.Column
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import mil.nga.sf.geojson.FeatureCollection
 import ru.eleventh.svmd.model.db.MapMeta
-import ru.eleventh.svmd.model.enums.Directive
 
-open class MapResponse(
-    success: Boolean,
-)
 
-class FailResponse(
-    success: Boolean,
-    reason: String
-) : MapResponse(success)
+open class MapResponse(success: Boolean) {
+    @JsonSerialize
+    private val success = success
+}
 
-class SuccessResponse(
-    success: Boolean,
-    errors: List<String>,
+class MapResponseSuccess(
     warnings: List<String>,
     metadata: MapMeta,
-    directives: Map<Directive, Column>,
-    collection: FeatureCollection
-) : MapResponse(success)
+    directives: Map<String, Iterable<String>>,
+    geojson: FeatureCollection,
+) : MapResponse(true) {
+    @JsonSerialize
+    private val warnings: List<String> = warnings
+
+    @JsonSerialize
+    private val geojson: FeatureCollection = geojson
+
+    @JsonSerialize
+    private val directives: Map<String, Iterable<String>> = directives
+
+    @JsonSerialize
+    private val metadata: MapMeta = metadata
+
+}
+
+class MapResponseFail(errors: List<String>) : MapResponse(false) {
+    @JsonSerialize
+    private val errors: List<String> = errors
+}

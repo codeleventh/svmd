@@ -4,8 +4,10 @@ package ru.eleventh.svmd
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
+import io.ktor.server.plugins.cachingheaders.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -21,17 +23,16 @@ import java.util.*
 
 fun Application.configureRouting() {
     val appConfig: Properties = loadProperties("src/main/resources/application.properties")
-    val cacheLifetime = appConfig.getProperty("svmd.cache.lifetime").toLong()
+    val cacheLifetime = appConfig.getProperty("svmd.cache.lifetime").toInt()
 
     install(ContentNegotiation) {
         jackson {
-            enable(SerializationFeature.INDENT_OUTPUT)
+            disable(SerializationFeature.INDENT_OUTPUT)
             disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             registerModule(JavaTimeModule())
         }
     }
     routing {
-        // TODO: null checks
         route("api") {
             route("meta") {
                 post { call.respond(MapService.createMap(call.receive<NewMapMeta>())!!) }
@@ -45,10 +46,13 @@ fun Application.configureRouting() {
                 }
             }
             route("map/{mapId}") {
+                install(CachingHeaders) {
+                        options { _, _ -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = cacheLifetime)) }
+                }
                 get {
-                    call.response.header(HttpHeaders.CacheControl, cacheLifetime)
                     call.respond(MapService.convertMap(call.parameters["mapId"]!!.uppercase()))
                 }
+                get("geojson") { TODO() }
             }
             route("user") {
                 post { call.respond(UserService.createUser(call.receive<NewUser>())!!) }

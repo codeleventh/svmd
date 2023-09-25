@@ -21,11 +21,11 @@ object CacheService {
 
     suspend fun getSpreadsheet(spreadsheetId: String): String {
         val cachedSpreadsheet = cache[spreadsheetId]
-        return (if (cachedSpreadsheet?.first?.isAfter(now().minusMillis(cacheLifetime)) == true)
+        return (if (cachedSpreadsheet?.first?.isAfter(now().minusSeconds(cacheLifetime)) == true)
             cachedSpreadsheet.second
         else {
             val newSpreadsheet = downloadSpreadsheet(spreadsheetId)
-            cache[spreadsheetId] = Pair(now(), newSpreadsheet)
+            cache[spreadsheetId] = now() to newSpreadsheet
             newSpreadsheet
         })
     }

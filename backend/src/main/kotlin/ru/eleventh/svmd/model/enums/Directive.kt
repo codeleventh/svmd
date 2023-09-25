@@ -1,6 +1,6 @@
 package ru.eleventh.svmd.model.enums
 
-enum class Directive(directive: String) {
+enum class Directive(val directive: String) {
     NAME("#NAME"),
     COLOR("#COLOR"),
     COORDINATES("#COORDINATES"),
@@ -16,3 +16,4 @@ enum class Directive(directive: String) {
     CARD_LINK("#CARD_LINK"),
 }
 
+val Directives = Directive.values().map { it.directive }
