@@ -10,12 +10,16 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import mil.nga.sf.geojson.*
 import org.jetbrains.kotlin.konan.properties.Properties
 import org.jetbrains.kotlin.konan.properties.loadProperties
+import ru.eleventh.svmd.DATE_FORMAT
 import ru.eleventh.svmd.exceptions.TransformException
 import ru.eleventh.svmd.model.Errors
 import ru.eleventh.svmd.model.TransformedMap
 import ru.eleventh.svmd.model.Warns
 import ru.eleventh.svmd.model.enums.Directive.*
 import ru.eleventh.svmd.model.enums.Directives
+import java.time.DateTimeException
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 object TransformService {
 
@@ -109,8 +113,11 @@ object TransformService {
                 throw TransformException()
             }
 
-            // TODO: validation of columns with directives like #FILTER_SLIDER
-            // TODO: validation of slider directives combination
+            val columnsWithFilters =
+                listOf(FILTER_RANGE, FILTER_SELECT, FILTER_SLIDER, FOOTER_SLIDER).map { directivesMap[it.directive]!! }
+            columnsWithFilters.flatten().groupingBy { it }.eachCount().entries.filter { it.value > 1 }.forEach {
+                errors += Errors.COLUMN_HAVE_MULTIPLE_FILTERS(it.key)
+            }
 
             val coordinatesHeader = directivesMap[COORDINATES.directive]!!.first()
             val coordinatesHeaderIndex = headersMap.entries.find { it.value.second == coordinatesHeader }!!.key
@@ -136,6 +143,23 @@ object TransformService {
                     resultFeature
                 }
             }.filterNotNull()
+
+            columnsWithFilters.flatten().toSet().forEach { header ->
+                val values = validatedFeatures.mapNotNull { it.properties[header] }.map { it.toString() }
+                val isHaveNumbers = { values.find { v -> v.toDoubleOrNull() != null } }
+                val isHaveDates = {
+                    values.find { v ->
+                        try {
+                            LocalDate.parse(v, DateTimeFormatter.ofPattern(DATE_FORMAT))
+                            true
+                        } catch (e: DateTimeException) {
+                            false
+                        }
+                    }
+                }
+                if (isHaveNumbers() != null && isHaveDates() != null)
+                    errors += Errors.MIXED_TYPES_IN_FILTERS(header)
+            }
 
             if (validatedFeatures.isEmpty() && features.isNotEmpty())
                 errors.add(Errors.NO_GOOD_LINES)

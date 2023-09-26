@@ -35,7 +35,7 @@ object Errors {
     const val NO_COORDINATES = "Отсутствует колонка с координатами"
     const val TOO_MUCH_COORDINATES = "В таблице больше одной колонки с координатами"
 
-    val MIXED_TYPES = { head: String -> "Колонка «${head}» содержит числа и даты вперемешку" }
+    val MIXED_TYPES_IN_FILTERS = { head: String -> "Колонка «${head}» содержит числа и даты вперемешку" }
     val COLUMN_HAVE_MULTIPLE_FILTERS = { head: String ->
         "В колонке «${head}» указано больше одного фильтра"
     }
