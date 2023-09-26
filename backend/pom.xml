@@ -134,6 +134,11 @@
             <artifactId>exposed-jdbc</artifactId>
             <version>${exposed.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.karumi.kotlinsnapshot</groupId>
+            <artifactId>core</artifactId>
+            <version>2.3.0</version>
+        </dependency>
     </dependencies>
     <build>
         <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>

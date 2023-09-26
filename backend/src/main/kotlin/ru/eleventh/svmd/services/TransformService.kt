@@ -8,6 +8,8 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.Column
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import mil.nga.sf.geojson.*
+import org.jetbrains.kotlin.konan.properties.Properties
+import org.jetbrains.kotlin.konan.properties.loadProperties
 import ru.eleventh.svmd.exceptions.TransformException
 import ru.eleventh.svmd.model.Errors
 import ru.eleventh.svmd.model.TransformedMap
@@ -16,6 +18,9 @@ import ru.eleventh.svmd.model.enums.Directive.*
 import ru.eleventh.svmd.model.enums.Directives
 
 object TransformService {
+
+    private val appConfig: Properties = loadProperties("src/main/resources/application.properties")
+    private val maxObjects = appConfig.getProperty("svmd.maxobjects").toInt()
 
     private val headerMapper = CsvMapper()
         .readerForListOf(String::class.java)
@@ -36,6 +41,11 @@ object TransformService {
         val warns = mutableListOf<String>()
 
         try {
+            if (csv.isEmpty()) {
+                errors.add(Errors.NO_LINES)
+                throw TransformException()
+            }
+
             val rawHeaders = headerMapper
                 .readValues<List<String>>(csv)
                 .next()
@@ -50,7 +60,7 @@ object TransformService {
             Directives.forEach { directivesMap[it] = mutableSetOf() }
 
             // Putting values to those maps
-            val split = { h: String -> h.split(' ', '\n') }
+            val split = { h: String -> h.split(' ', '\t', '\n') }
             val refineHeader = { h: String ->
                 split(h).filter { it.isNotEmpty() }.filterNot { Directives.contains(it) }.joinToString(" ")
             }
@@ -66,13 +76,16 @@ object TransformService {
                 if (directivesMap.values.flatten().contains(refinedHeader)) headersMap[i] = rawHeader to refinedHeader
             }
 
-            if (directivesMap[COORDINATES.directive]!!.size == 0)
-                errors += Errors.NO_COORDINATES()
-            else if (directivesMap[COORDINATES.directive]!!.size > 1)
-                errors += Errors.TOO_MUCH_COORDINATES()
+            if (directivesMap[COORDINATES.directive]!!.size == 0) {
+                errors += Errors.NO_COORDINATES
+                throw TransformException()
+            } else if (directivesMap[COORDINATES.directive]!!.size > 1) {
+                errors += Errors.TOO_MUCH_COORDINATES
+                throw TransformException()
+            }
 
             listOf(CARD_LINK, COLOR, CARD_TEXT, NAME).map { it.directive }.forEach {
-                if (directivesMap[it]!!.size > 1) warns += Warns.DIRECTIVE_HAVE_MULTIPLE_COLUMNS(it)
+                if (directivesMap[it]!!.size > 1) errors += Errors.DIRECTIVE_ON_MULTIPLE_COLUMNS(it)
             }
             headersMap.values.map { it.second }.groupingBy { it }.eachCount().entries
                 .filter { it.value > 1 }
@@ -85,10 +98,16 @@ object TransformService {
             val entities = entityMapper
                 .withFeatures(JsonParser.Feature.IGNORE_UNDEFINED).with(StreamReadFeature.IGNORE_UNDEFINED)
                 .with(headerSchema.withNullValue(null))
-            val features = entities.readValues<Map<String, String>>(csv).readAll()
+            val features = entities
+                .readValues<Map<String, String>>(csv)
+                .readAll()
 
             if (features.isEmpty())
-                errors.add(Errors.NO_LINES())
+                errors.add(Errors.NO_LINES)
+            else if (features.size >= maxObjects) {
+                errors.add(Errors.TOO_MUCH_OBJECTS(features.size))
+                throw TransformException()
+            }
 
             // TODO: validation of columns with directives like #FILTER_SLIDER
             // TODO: validation of slider directives combination
@@ -118,8 +137,8 @@ object TransformService {
                 }
             }.filterNotNull()
 
-            if (validatedFeatures.isEmpty())
-                errors.add(Errors.NO_GOOD_LINES())
+            if (validatedFeatures.isEmpty() && features.isNotEmpty())
+                errors.add(Errors.NO_GOOD_LINES)
             return if (errors.isNotEmpty()) throw TransformException(errors) else
                 TransformedMap(warns, directivesMap, FeatureCollection(validatedFeatures))
         } catch (e: Exception) {
@@ -135,12 +154,15 @@ object TransformService {
             if (coordinates.size == 2) Point(Position(coordinates.first(), coordinates.last()))
             else null
         } catch (e: Exception) {
-            val res = jacksonObjectMapper().readerForListOf(List::class.java).readValue<List<List<List<Double>>>>(value)
-            val isValid = res.find { it.size != 1 || it.find { p -> p.size != 2 } != null } == null
-            if (isValid) Polygon.fromCoordinates(res.map { it.map { x -> Position(x.first(), x.last()) } })
-            else null
-        } catch (e: Exception) {
-            return null
+            try {
+                val res =
+                    jacksonObjectMapper().readerForListOf(List::class.java).readValue<List<List<List<Double>>>>(value)
+                val isValid = res.find { it.size != 1 || it.find { p -> p.size != 2 } != null } == null
+                if (isValid) Polygon.fromCoordinates(res.map { it.map { x -> Position(x.first(), x.last()) } })
+                else null
+            } catch (e: Exception) {
+                return null
+            }
         }
     }
 }
