@@ -1,0 +1,9 @@
+.error-wrapper, .error-wrapper > div {
+    height: 100%;
+    margin: auto;
+}
+
+.error-wrapper > div > div {
+    min-width: 540px;
+    max-width: 80%;
+}
