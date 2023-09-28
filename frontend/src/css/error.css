@@ -7,3 +7,10 @@
     min-width: 540px;
     max-width: 80%;
 }
+
+.error-wrapper .error-stack {
+    border-radius: 4px;
+    padding: 16px;
+    font-family: Fira Mono, JetBrains Mono, Monaco, Courier, monospace;
+    background-color: rgba(0, 0, 0, 0.2);
+}

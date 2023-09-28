@@ -1,10 +1,10 @@
 import {createSelector} from '@reduxjs/toolkit'
 import {IStore} from './store'
 import {allPass, defaultTo, equals, head, toPairs} from 'ramda'
-import {getTagsFromString} from './utils'
 import dayjs from 'dayjs'
 import {Directive, IFeature} from './model'
 import {DATE_FORMAT} from './const'
+import {getTagsFromString} from "./util";
 
 export const mapMetaSelector = createSelector(
     (state: IStore) => state,
