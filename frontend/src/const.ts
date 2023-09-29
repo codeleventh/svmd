@@ -17,7 +17,6 @@ export const MARKER_RADIUS = 7 // TODO: X for mobile, Y for PC
 export const DEFAULT_PADDING = 10 // spacing between popup and screen borders, px
 
 export const TRANSITION_DURATION = 100
-
 export const SECONDS_IN_DAY = 86400
 
 export const LEGEND_COLORS = [

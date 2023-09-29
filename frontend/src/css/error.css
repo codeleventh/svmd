@@ -4,8 +4,8 @@
 }
 
 .error-wrapper > div > div {
-    min-width: 540px;
-    max-width: 80%;
+    min-width: 420px;
+    max-width: 60%;
 }
 
 .error-wrapper .error-stack {

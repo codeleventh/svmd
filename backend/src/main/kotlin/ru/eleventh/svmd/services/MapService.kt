@@ -50,9 +50,9 @@ object MapService {
 
         return try {
             val result = TransformService.transform(spreadsheet)
-            MapResponseSuccess(result.warns, metadata, result.directivesMap, result.geojson)
+            MapResponseSuccess(result.warnings, metadata, result.directivesMap, result.geojson)
         } catch (e: TransformException) {
-            MapResponseFail(e.errors)
+            MapResponseFail(e.errors, e.warnings)
         }
     }
 

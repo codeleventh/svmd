@@ -30,7 +30,10 @@ class MapResponseSuccess(
 
 }
 
-class MapResponseFail(errors: List<String>) : MapResponse(false) {
+class MapResponseFail(errors: List<String>, warnings: List<String>) : MapResponse(false) {
     @JsonSerialize
     private val errors: List<String> = errors
+
+    @JsonSerialize
+    private val warnings: List<String> = warnings
 }

@@ -43,12 +43,12 @@ object TransformService {
 
     fun transform(csv: String): TransformedMap {
         val errors = mutableListOf<String>()
-        val warns = mutableListOf<String>()
+        val warnings = mutableListOf<String>()
 
         try {
             if (csv.isEmpty()) {
                 errors.add(Errors.NO_LINES)
-                throw TransformException(errors)
+                throw TransformException(errors,warnings)
             }
 
             val rawHeaders = headerMapper
@@ -90,10 +90,10 @@ object TransformService {
 
             if (directivesMap[COORDINATES.directive]!!.size == 0) {
                 errors += Errors.NO_COORDINATES
-                throw TransformException(errors)
+                throw TransformException(errors,warnings)
             } else if (directivesMap[COORDINATES.directive]!!.size > 1) {
                 errors += Errors.TOO_MUCH_COORDINATES
-                throw TransformException(errors)
+                throw TransformException(errors,warnings)
             }
 
             listOf(CARD_LINK, COLOR, CARD_TEXT, NAME).map { it.directive }.forEach {
@@ -116,10 +116,10 @@ object TransformService {
 
             if (features.isEmpty()) {
                 errors.add(Errors.NO_LINES)
-                throw TransformException(errors)
+                throw TransformException(errors,warnings)
             } else if (features.size >= maxObjects) {
                 errors.add(Errors.TOO_MUCH_OBJECTS(features.size))
-                throw TransformException(errors)
+                throw TransformException(errors,warnings)
             }
 
             val columnsWithFilters =
@@ -133,7 +133,7 @@ object TransformService {
             val validatedFeatures = features.mapIndexed { i, feature ->
                 val coordinates = validateCoordinates(feature[headersMap[coordinatesHeaderIndex]!!.first])
                 if (coordinates == null) {
-                    warns.add(Warns.WRONG_COORDINATES(i))
+                    warnings.add(Warns.WRONG_COORDINATES(i))
                     null
                 } else {
                     val resultFeature = Feature(coordinates)
@@ -173,12 +173,12 @@ object TransformService {
             if (validatedFeatures.isEmpty() && features.isNotEmpty())
                 errors.add(Errors.NO_GOOD_LINES)
 
-            return if (errors.isNotEmpty()) throw TransformException(errors) else
-                TransformedMap(warns, directivesMap, FeatureCollection(validatedFeatures))
+            return if (errors.isNotEmpty()) throw TransformException(errors,warnings) else
+                TransformedMap(warnings, directivesMap, FeatureCollection(validatedFeatures))
         } catch (e: TransformException) {
             throw e
         } catch (e: Exception) {
-            throw TransformException(listOf("${Errors.WHAT_THE_FUCK}: ${e.message}") + errors)
+            throw TransformException(listOf("${Errors.WHAT_THE_FUCK}: ${e.message}") + errors, warnings)
         }
     }
 

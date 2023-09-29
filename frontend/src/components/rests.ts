@@ -12,5 +12,6 @@ export type ISuccessResponse = {
 
 export interface IErrorResponse {
     success: false;
+    warnings?: string[];
     errors: string[];
 }
