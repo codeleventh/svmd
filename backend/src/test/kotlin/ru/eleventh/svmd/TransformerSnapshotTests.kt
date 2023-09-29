@@ -131,6 +131,22 @@ class TransformerSnapshotTests : SnapshotTest() {
     }
 
     @Test
+    fun `Unnamed columns (with and without directives)`() {
+        val csv = "coords #COORDINATES,#SEARCH,,  #SEARCH ,#COLOR,\" #NAME\n #SEARCH\",,\n" +
+                "\"[0,0]\", a,  , b, c, d, e, f\n" +
+                "\"[0,0]\",  ,  , g,  , h, i, j\n"
+        assert.matchWithSnapshot(transform(csv), "unnamed_columns")
+    }
+
+    @Test
+    fun `Column names generation`() {
+        val csv = "coords #COORDINATES,#NAME,#SEARCH unnamed_column_6,#SEARCH unnamed_column_2,unnamed_column_2__ #SEARCH ,   #COLOR #SEARCH  ,unnamed_column_2_\n" +
+                "\"[0,0]\", a, b, c, d \n" +
+                "\"[0,0]\",  , e,  , f \n"
+        assert.matchWithSnapshot(transform(csv), "columns_names_generation")
+    }
+
+    @Test
     fun `Columns with filter combinations`() {
         val csv = "coords #COORDINATES, val1 #FILTER_SELECT #FILTER_SLIDER, val2 #FILTER_SELECT " +
                 "#FOOTER_SLIDER, val3 #FILTER_SELECT #FILTER_RANGE, " +

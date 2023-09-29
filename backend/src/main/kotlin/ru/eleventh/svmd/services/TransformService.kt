@@ -21,6 +21,7 @@ import java.time.DateTimeException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+
 object TransformService {
 
     private val appConfig: Properties = loadProperties("src/main/resources/application.properties")
@@ -47,45 +48,52 @@ object TransformService {
         try {
             if (csv.isEmpty()) {
                 errors.add(Errors.NO_LINES)
-                throw TransformException()
+                throw TransformException(errors)
             }
 
             val rawHeaders = headerMapper
                 .readValues<List<String>>(csv)
                 .next()
 
-            // (column_index -> (rawHeader, refinedHeader)
-            // example: (2 -> ("Building address #CARD_INFO #SEARCH", "Building address"))
-            val headersMap = HashMap<Int, Pair<String, String>>()
+            // helpers
+            val split = { h: String -> h.split(' ', '\t', '\n') }
+            val refineHeader = { h: String ->
+                split(h).filter { it.isNotEmpty() }.filterNot { Directives.contains(it) }.joinToString(" ").trim()
+            }
 
             // (directive -> [column...])
             // example: ("#FILTER_SELECT" -> ["Building type", "Building condition"])
             val directivesMap = HashMap<String, MutableSet<String>>()
             Directives.forEach { directivesMap[it] = mutableSetOf() }
 
-            // Putting values to those maps
-            val split = { h: String -> h.split(' ', '\t', '\n') }
-            val refineHeader = { h: String ->
-                split(h).filter { it.isNotEmpty() }.filterNot { Directives.contains(it) }.joinToString(" ")
-            }
+            // (column_index -> (rawHeader, refinedHeader)
+            // example: (2 -> ("Building address #CARD_INFO #SEARCH", "Building address"))
+            val headersMap = HashMap<Int, Pair<String, String>>()
+
+            // Modifying entries of those two maps
+            val refinedHeaders = rawHeaders.map { refineHeader(it) } // temporary object
             rawHeaders.forEachIndexed { i, rawHeader ->
                 val splitHeader = split(rawHeader)
-                val refinedHeader = refineHeader(rawHeader)
+                val refinedHeader = refinedHeaders[i].ifEmpty {
+                    var newName = "unnamed_column_${i + 1}"
+                    while (
+                        refinedHeaders.find { existing -> existing == newName } != null ||
+                        headersMap.values.map { it.second }.find { existing -> existing == newName } != null
+                    ) newName += "_"
+                    newName
+                }
                 splitHeader.forEach {
-                    if (Directives.contains(it))
-                        if (refinedHeader.isEmpty())
-                            errors += Errors.COLUMN_NAME_IS_EMPTY(i)
-                        else directivesMap[it]!!.add(refinedHeader)
+                    if (Directives.contains(it)) directivesMap[it]!!.add(refinedHeader)
                 }
                 if (directivesMap.values.flatten().contains(refinedHeader)) headersMap[i] = rawHeader to refinedHeader
             }
 
             if (directivesMap[COORDINATES.directive]!!.size == 0) {
                 errors += Errors.NO_COORDINATES
-                throw TransformException()
+                throw TransformException(errors)
             } else if (directivesMap[COORDINATES.directive]!!.size > 1) {
                 errors += Errors.TOO_MUCH_COORDINATES
-                throw TransformException()
+                throw TransformException(errors)
             }
 
             listOf(CARD_LINK, COLOR, CARD_TEXT, NAME).map { it.directive }.forEach {
@@ -106,11 +114,12 @@ object TransformService {
                 .readValues<Map<String, String>>(csv)
                 .readAll()
 
-            if (features.isEmpty())
+            if (features.isEmpty()) {
                 errors.add(Errors.NO_LINES)
-            else if (features.size >= maxObjects) {
+                throw TransformException(errors)
+            } else if (features.size >= maxObjects) {
                 errors.add(Errors.TOO_MUCH_OBJECTS(features.size))
-                throw TransformException()
+                throw TransformException(errors)
             }
 
             val columnsWithFilters =
@@ -163,10 +172,13 @@ object TransformService {
 
             if (validatedFeatures.isEmpty() && features.isNotEmpty())
                 errors.add(Errors.NO_GOOD_LINES)
+
             return if (errors.isNotEmpty()) throw TransformException(errors) else
                 TransformedMap(warns, directivesMap, FeatureCollection(validatedFeatures))
+        } catch (e: TransformException) {
+            throw e
         } catch (e: Exception) {
-            throw TransformException(errors)
+            throw TransformException(listOf("${Errors.WHAT_THE_FUCK}: ${e.message}") + errors)
         }
     }
 
@@ -181,7 +193,7 @@ object TransformService {
             try {
                 val res =
                     jacksonObjectMapper().readerForListOf(List::class.java).readValue<List<List<List<Double>>>>(value)
-                val isValid = res.find { it.size != 1 || it.find { p -> p.size != 2 } != null } == null
+                val isValid = res.isNotEmpty() && res.all { r -> r.find { it.size != 2 } == null }
                 if (isValid) Polygon.fromCoordinates(res.map { it.map { x -> Position(x.first(), x.last()) } })
                 else null
             } catch (e: Exception) {

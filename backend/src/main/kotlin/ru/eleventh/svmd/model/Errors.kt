@@ -8,7 +8,8 @@ private val maxObjects = appConfig.getProperty("svmd.maxobjects").toInt()
 
 object Warns {
     val WRONG_COORDINATES = { index: Int ->
-        "Строка №$index: координаты отсутствуют или заданы некорректно, Объект будет пропущен"
+        "Строка №${index+2}: координаты отсутствуют или заданы некорректно (объект будет пропущен)"
+        // ↑ +1 for natural indexing, +1 for header line that we're not iterating
     }
 }
 
@@ -22,9 +23,6 @@ object Errors {
     const val NO_LINES = "В таблице отсутствуют объекты"
     const val NO_GOOD_LINES = "В таблице отсутствуют объекты после отфильтровки некорректно заполненных"
 
-    val COLUMN_NAME_IS_EMPTY = { index: Int ->
-        "Колонка №${index + 1} не имеет названия"
-    }
     val COLUMN_NAME_IS_DUPLICATED = { head: String ->
         "Имя колонки «${head}» повторяется (имена должны быть уникальными)"
     }
