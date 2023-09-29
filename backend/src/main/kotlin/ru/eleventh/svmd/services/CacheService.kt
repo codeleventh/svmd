@@ -41,9 +41,8 @@ object CacheService {
             HttpStatusCode.OK -> response.body()
             HttpStatusCode.NotFound -> throw RuntimeException(Errors.NO_TABLE_EXIST)
             HttpStatusCode.Unauthorized, HttpStatusCode.BadRequest -> throw RuntimeException(Errors.NO_TABLE_PERMISSION)
-            // TODO: ↓ should been investigated
-            HttpStatusCode.Gone -> throw RuntimeException(Errors.WHAT_THE_FUCK(RuntimeException("wtf is this shit")))
-            else -> throw RuntimeException(Errors.BAD_GOOGLE_RESPONSE)
+            HttpStatusCode.Gone -> throw RuntimeException(Errors.TABLE_WAS_DELETED)
+            else -> throw RuntimeException(Errors.BAD_GOOGLE_RESPONSE(response.status))
         }
     }
 }
