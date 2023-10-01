@@ -7,6 +7,7 @@ export const DATE_FORMAT = 'DD.MM.YYYY'
 export const DATETIME_FORMAT = 'DD.MM.YYYY HH:MM'
 
 export const REPO_URL = 'https://github.com/codeleventh/svmd'
+export const PROJECT_START_YEAR = 2022
 export const SVMD_VERSION = '0.1' // TODO: get from package.json
 
 export const DEFAULT_FEATURE_NAME = 'Без названия'

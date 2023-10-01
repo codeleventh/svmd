@@ -58,7 +58,7 @@ export type IFeature = {
     properties: Record<string, string>;
 };
 
-export type IFeatureIndexed = IFeature & { id?: number; };
+export type IFeatureIndexed = IFeature & { index: number; };
 
 export type IFeatureCollection = { features: IFeature[] };
 
