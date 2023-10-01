@@ -82,7 +82,7 @@ class PersistenceService {
             .singleOrNull()
     }
 
-    suspend fun updateMap(map: MapMeta): Unit = dbQuery {
+    suspend fun updateMap(map: MapMeta): Int = dbQuery {
         MapsTable.update({ MapsTable.identifier eq map.identifier }) {
             it[title] = map.title
             it[center] = mapper.writeValueAsString(map.center)
@@ -112,7 +112,7 @@ class PersistenceService {
             .singleOrNull()
     }
 
-    suspend fun updateUser(user: User): Unit = dbQuery {
+    suspend fun updateUser(user: User): Int = dbQuery {
         UsersTable.update({ UsersTable.id eq user.id }) {
             it[email] = user.email
         }

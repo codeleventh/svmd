@@ -11,16 +11,16 @@ import mil.nga.sf.geojson.*
 import org.jetbrains.kotlin.konan.properties.Properties
 import org.jetbrains.kotlin.konan.properties.loadProperties
 import ru.eleventh.svmd.DATE_FORMAT
-import ru.eleventh.svmd.exceptions.TransformException
+import ru.eleventh.svmd.UNNAMED_COLUMN_PREFIX
+import ru.eleventh.svmd.exceptions.SvmdException
 import ru.eleventh.svmd.model.Errors
-import ru.eleventh.svmd.model.TransformedMap
-import ru.eleventh.svmd.model.Warns
+import ru.eleventh.svmd.model.TransformErrors
+import ru.eleventh.svmd.model.TransformedMapWithWarnings
 import ru.eleventh.svmd.model.enums.Directive.*
 import ru.eleventh.svmd.model.enums.Directives
 import java.time.DateTimeException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
 
 object TransformService {
 
@@ -41,14 +41,14 @@ object TransformService {
         .with(CsvParser.Feature.ALLOW_TRAILING_COMMA)
         .with(CsvParser.Feature.TRIM_SPACES)
 
-    fun transform(csv: String): TransformedMap {
+    fun transform(csv: String): TransformedMapWithWarnings {
         val errors = mutableListOf<String>()
         val warnings = mutableListOf<String>()
 
         try {
             if (csv.isEmpty()) {
-                errors.add(Errors.NO_LINES)
-                throw TransformException(errors,warnings)
+                errors.add(TransformErrors.NO_LINES)
+                throw SvmdException(errors, warnings)
             }
 
             val rawHeaders = headerMapper
@@ -75,7 +75,7 @@ object TransformService {
             rawHeaders.forEachIndexed { i, rawHeader ->
                 val splitHeader = split(rawHeader)
                 val refinedHeader = refinedHeaders[i].ifEmpty {
-                    var newName = "unnamed_column_${i + 1}"
+                    var newName = "${UNNAMED_COLUMN_PREFIX}_${i + 1}"
                     while (
                         refinedHeaders.find { existing -> existing == newName } != null ||
                         headersMap.values.map { it.second }.find { existing -> existing == newName } != null
@@ -89,19 +89,19 @@ object TransformService {
             }
 
             if (directivesMap[COORDINATES.directive]!!.size == 0) {
-                errors += Errors.NO_COORDINATES
-                throw TransformException(errors,warnings)
+                errors += TransformErrors.NO_COORDINATES
+                throw SvmdException(errors, warnings)
             } else if (directivesMap[COORDINATES.directive]!!.size > 1) {
-                errors += Errors.TOO_MUCH_COORDINATES
-                throw TransformException(errors,warnings)
+                errors += TransformErrors.TOO_MUCH_COORDINATES
+                throw SvmdException(errors, warnings)
             }
 
             listOf(CARD_LINK, COLOR, CARD_TEXT, NAME).map { it.directive }.forEach {
-                if (directivesMap[it]!!.size > 1) errors += Errors.DIRECTIVE_ON_MULTIPLE_COLUMNS(it)
+                if (directivesMap[it]!!.size > 1) errors += TransformErrors.DIRECTIVE_ON_MULTIPLE_COLUMNS(it)
             }
             headersMap.values.map { it.second }.groupingBy { it }.eachCount().entries
                 .filter { it.value > 1 }
-                .forEach { errors += Errors.COLUMN_NAME_IS_DUPLICATED(it.key) }
+                .forEach { errors += TransformErrors.COLUMN_NAME_IS_DUPLICATED(it.key) }
 
             val headerSchema = CsvSchema.builder()
                 .setUseHeader(true)
@@ -115,17 +115,17 @@ object TransformService {
                 .readAll()
 
             if (features.isEmpty()) {
-                errors.add(Errors.NO_LINES)
-                throw TransformException(errors,warnings)
+                errors.add(TransformErrors.NO_LINES)
+                throw SvmdException(errors, warnings)
             } else if (features.size >= maxObjects) {
-                errors.add(Errors.TOO_MUCH_OBJECTS(features.size))
-                throw TransformException(errors,warnings)
+                errors.add(TransformErrors.TOO_MUCH_OBJECTS(features.size))
+                throw SvmdException(errors, warnings)
             }
 
             val columnsWithFilters =
                 listOf(FILTER_RANGE, FILTER_SELECT, FILTER_SLIDER, FOOTER_SLIDER).map { directivesMap[it.directive]!! }
             columnsWithFilters.flatten().groupingBy { it }.eachCount().entries.filter { it.value > 1 }.forEach {
-                errors += Errors.COLUMN_HAVE_MULTIPLE_FILTERS(it.key)
+                errors += TransformErrors.COLUMN_HAVE_MULTIPLE_FILTERS(it.key)
             }
 
             val coordinatesHeader = directivesMap[COORDINATES.directive]!!.first()
@@ -133,7 +133,7 @@ object TransformService {
             val validatedFeatures = features.mapIndexed { i, feature ->
                 val coordinates = validateCoordinates(feature[headersMap[coordinatesHeaderIndex]!!.first])
                 if (coordinates == null) {
-                    warnings.add(Warns.WRONG_COORDINATES(i))
+                    warnings.add(TransformErrors.WARN_WRONG_COORDINATES(i))
                     null
                 } else {
                     val resultFeature = Feature(coordinates)
@@ -167,18 +167,18 @@ object TransformService {
                     }
                 }
                 if (isHaveNumbers() != null && isHaveDates() != null)
-                    errors += Errors.MIXED_TYPES_IN_FILTERS(header)
+                    errors += TransformErrors.MIXED_TYPES_IN_FILTERS(header)
             }
 
             if (validatedFeatures.isEmpty() && features.isNotEmpty())
-                errors.add(Errors.NO_GOOD_LINES)
+                errors.add(TransformErrors.NO_GOOD_LINES)
 
-            return if (errors.isNotEmpty()) throw TransformException(errors,warnings) else
-                TransformedMap(warnings, directivesMap, FeatureCollection(validatedFeatures))
-        } catch (e: TransformException) {
+            return if (errors.isNotEmpty()) throw SvmdException(errors, warnings) else
+                TransformedMapWithWarnings(warnings, directivesMap, FeatureCollection(validatedFeatures))
+        } catch (e: SvmdException) {
             throw e
         } catch (e: Exception) {
-            throw TransformException(listOf("${Errors.WHAT_THE_FUCK}: ${e.message}") + errors, warnings)
+            throw SvmdException(listOf("${Errors.UNEXPECTED_ERROR}: ${e.message}") + errors, warnings)
         }
     }
 

@@ -1,17 +1,24 @@
 import {Directive, IFeatureCollection, IMapMeta} from '../model'
 
-export type IApiResponse = ISuccessResponse | IErrorResponse;
+export type IApiResponse = IMapSuccessResponse | IFailResponse;
 
-export type ISuccessResponse = {
-    success: true;
+export type IFailResponse = {
+    success: false
+    errors: string[];
     warnings?: string[];
+}
+
+export type ISuccessResponse<T> = {
+    success: true;
+    body: T
+};
+
+export type ConvertedMap = {
     metadata: IMapMeta;
     directives: Map<Directive, string[]>
     geojson: IFeatureCollection
-};
+}
 
-export interface IErrorResponse {
-    success: false;
+export type IMapSuccessResponse = ISuccessResponse<ConvertedMap> & {
     warnings?: string[];
-    errors: string[];
 }

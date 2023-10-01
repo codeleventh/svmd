@@ -1,11 +1,13 @@
 package ru.eleventh.svmd.services
 
-import ru.eleventh.svmd.exceptions.TransformException
+import ru.eleventh.svmd.exceptions.SvmdException
+import ru.eleventh.svmd.model.ApiErrors
+import ru.eleventh.svmd.model.TransformedMap
 import ru.eleventh.svmd.model.db.MapMeta
 import ru.eleventh.svmd.model.db.NewMapMeta
+import ru.eleventh.svmd.model.responses.ApiResponse
+import ru.eleventh.svmd.model.responses.FailResponse
 import ru.eleventh.svmd.model.responses.MapResponse
-import ru.eleventh.svmd.model.responses.MapResponseFail
-import ru.eleventh.svmd.model.responses.MapResponseSuccess
 import java.time.Instant
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -29,31 +31,46 @@ object MapService {
         return ZEROS_STR.take(8 - string.length) + string
     }
 
-    // TODO: error handlers + ids comparing + spreadsheetId validation
+    private fun isSpreadsheetValid(id: String): Boolean = id.matches(Regex("2PACX-[-_a-zA-Z0-9]{80}"))
 
-    suspend fun createMap(newMap: NewMapMeta): String? = dao.createMap(newIdentifier(), newMap)
+    suspend fun createMap(newMap: NewMapMeta): String? {
+        if (!isSpreadsheetValid(newMap.spreadsheetId))
+            throw SvmdException(ApiErrors.BAD_SPREADSHEET_ID)
+        return dao.createMap(newIdentifier(), newMap)
+    }
 
     suspend fun getMaps(): List<MapMeta> = dao.getMaps()
 
-    suspend fun getMapsByUser(): Nothing = TODO()
+    fun getMapsByUser(): Nothing = TODO()
 
-    suspend fun getMap(identifier: String): MapMeta? = dao.getMap(identifier)
+    suspend fun getMap(identifier: String): MapMeta {
+        val result = dao.getMap(identifier)
+        if (result != null) return result
+        else throw SvmdException(ApiErrors.NO_MAP_EXIST)
+    }
 
-    suspend fun getSpreadsheetId(mapId: String): String? = dao.getSpreadsheetId(mapId)
+    private suspend fun getSpreadsheetId(mapId: String): String {
+        val result = dao.getSpreadsheetId(mapId)
+        if (result != null) return result
+        else throw SvmdException(ApiErrors.NOT_FOUND)
+    }
 
-    suspend fun updateMap(identifier: String, map: MapMeta): Unit = dao.updateMap(map)
+    suspend fun updateMap(identifier: String, map: MapMeta): Boolean {
+        if (identifier != map.identifier)
+            throw SvmdException(ApiErrors.IDS_DONT_MATCH)
+        return dao.updateMap(map) == 1
+    }
 
-    suspend fun convertMap(identifier: String): MapResponse {
-        val metadata = getMap(identifier)!!
-        val spreadsheetId = getSpreadsheetId(identifier)!!
+    suspend fun convertMap(identifier: String): ApiResponse {
+        val metadata = getMap(identifier)
+        val spreadsheetId = getSpreadsheetId(identifier)
         val spreadsheet = CacheService.getSpreadsheet(spreadsheetId)
 
         return try {
-            val result = TransformService.transform(spreadsheet)
-            MapResponseSuccess(result.warnings, metadata, result.directivesMap, result.geojson)
-        } catch (e: TransformException) {
-            MapResponseFail(e.errors, e.warnings)
+            val (warnings, directives, geojson) = TransformService.transform(spreadsheet)
+            MapResponse(warnings, TransformedMap(metadata, directives, geojson))
+        } catch (e: SvmdException) {
+            FailResponse(e.errors, e.warnings)
         }
     }
-
 }

@@ -1,6 +1,5 @@
 package ru.eleventh.svmd
 
-
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.http.*
@@ -17,6 +16,7 @@ import ru.eleventh.svmd.model.db.MapMeta
 import ru.eleventh.svmd.model.db.NewMapMeta
 import ru.eleventh.svmd.model.db.NewUser
 import ru.eleventh.svmd.model.db.User
+import ru.eleventh.svmd.model.responses.ApiResponse
 import ru.eleventh.svmd.services.MapService
 import ru.eleventh.svmd.services.UserService
 import java.util.*
@@ -24,6 +24,7 @@ import java.util.*
 fun Application.configureRouting() {
     val appConfig: Properties = loadProperties("src/main/resources/application.properties")
     val cacheLifetime = appConfig.getProperty("svmd.cache.lifetime").toInt()
+
 
     install(ContentNegotiation) {
         jackson {
@@ -37,20 +38,20 @@ fun Application.configureRouting() {
             route("meta") {
                 post { call.respond(MapService.createMap(call.receive<NewMapMeta>())!!) }
                 get { call.respond(MapService.getMaps()) }
-                get("{mapId}") {
-                    call.respond(MapService.getMap(call.parameters["mapId"]!!.uppercase())!!)
-                }
+                get("{mapId}") { call.respond(MapService.getMap(call.parameters["mapId"]!!.uppercase())) }
                 put("{mapId}") {
                     val meta = call.receive<MapMeta>()
-                    call.respond(MapService.updateMap(call.parameters["mapId"]!!.uppercase(), meta))
+                    val mapId = call.parameters["mapId"]
+                    call.respond(ApiResponse(MapService.updateMap(mapId!!.uppercase(), meta)))
                 }
             }
             route("map/{mapId}") {
                 install(CachingHeaders) {
-                        options { _, _ -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = cacheLifetime)) }
+                    options { _, _ -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = cacheLifetime)) }
                 }
                 get {
-                    call.respond(MapService.convertMap(call.parameters["mapId"]!!.uppercase()))
+                    val mapId = call.parameters["mapId"]
+                    call.respond(MapService.convertMap(mapId!!))
                 }
                 get("geojson") { TODO() }
             }
@@ -58,11 +59,17 @@ fun Application.configureRouting() {
                 post { call.respond(UserService.createUser(call.receive<NewUser>())!!) }
                 get { call.respond(UserService.getUsers()) }
                 get("{id}") {
-                    call.respond(UserService.getUser(call.parameters["id"]!!.toLong())!!)
+                    call.respond(UserService.getUser(call.parameters["id"]!!.toLong()))
                 }
                 put("{id}") {
-                    val user = call.receive<User>()
-                    call.respond(UserService.updateUser(call.parameters["id"]!!.toLong(), user))
+                    call.respond(
+                        ApiResponse(
+                            UserService.updateUser(
+                                call.parameters["id"]!!.toLong(),
+                                call.receive<User>()
+                            )
+                        )
+                    )
                 }
             }
         }

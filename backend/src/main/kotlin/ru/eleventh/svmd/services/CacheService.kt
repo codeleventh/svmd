@@ -7,7 +7,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import org.jetbrains.kotlin.konan.properties.Properties
 import org.jetbrains.kotlin.konan.properties.loadProperties
-import ru.eleventh.svmd.model.Errors
+import ru.eleventh.svmd.model.TransformErrors
 import java.time.Instant
 import java.time.Instant.now
 
@@ -39,10 +39,10 @@ object CacheService {
 
         return when (response.status) {
             HttpStatusCode.OK -> response.body()
-            HttpStatusCode.NotFound -> throw RuntimeException(Errors.NO_TABLE_EXIST)
-            HttpStatusCode.Unauthorized, HttpStatusCode.BadRequest -> throw RuntimeException(Errors.NO_TABLE_PERMISSION)
-            HttpStatusCode.Gone -> throw RuntimeException(Errors.TABLE_WAS_DELETED)
-            else -> throw RuntimeException(Errors.BAD_GOOGLE_RESPONSE(response.status))
+            HttpStatusCode.NotFound -> throw RuntimeException(TransformErrors.NO_TABLE_EXIST)
+            HttpStatusCode.Unauthorized, HttpStatusCode.BadRequest -> throw RuntimeException(TransformErrors.NO_TABLE_PERMISSION)
+            HttpStatusCode.Gone -> throw RuntimeException(TransformErrors.TABLE_WAS_DELETED)
+            else -> throw RuntimeException(TransformErrors.BAD_GOOGLE_RESPONSE(response.status))
         }
     }
 }

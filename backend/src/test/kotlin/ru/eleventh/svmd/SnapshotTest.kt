@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.karumi.kotlinsnapshot.KotlinSnapshot
 import com.karumi.kotlinsnapshot.core.SerializationModule
-import ru.eleventh.svmd.exceptions.TransformException
+import ru.eleventh.svmd.exceptions.SvmdException
 import ru.eleventh.svmd.services.TransformService
 
 open class SnapshotTest {
@@ -14,7 +14,7 @@ open class SnapshotTest {
     val transform: (String) -> Any = { input ->
         try {
             TransformService.transform(input)
-        } catch (e: TransformException) {
+        } catch (e: SvmdException) {
             e.errors
         }
     }

@@ -11,12 +11,12 @@ import {Footer} from './Footer'
 import {Map} from './Map'
 
 interface IParams {
-	mapId: string;
+    mapId: string;
 }
 
 export const MapPage: React.FC = () => {
-	const {mapId} = useParams<IParams>()
-	const [response, setResponse] = useState<IApiResponse | null>(null)
+    const {mapId} = useParams<IParams>()
+    const [response, setResponse] = useState<IApiResponse | null>(null)
 
     useEffect(() => {
         axios
@@ -34,17 +34,17 @@ export const MapPage: React.FC = () => {
             })
     }, [mapId])
 
-	const dispatch = useDispatch()
-	if (response?.success) {
-		const {warnings} = response
-		const {metadata, geojson, directives} = response
+    const dispatch = useDispatch()
+    if (response?.success) {
+        const {body, warnings} = response
+        const {metadata, directives, geojson} = body
 
-		dispatch(Actions.setMeta(metadata))
-		dispatch(Actions.setDirectives(directives))
-		dispatch(Actions.setFeatures(geojson.features.map((f, i) => ({...f, id: i}))))
+        dispatch(Actions.setMeta(metadata))
+        dispatch(Actions.setDirectives(directives))
+        dispatch(Actions.setFeatures(geojson.features.map((f, i) => ({...f, index: i}))))
 
         if (metadata.title) document.title = metadata.title + ' · ' + document.title
-        warnings?.forEach((warning) => console.log("⚠ " + warning))
+        warnings?.forEach((warning) => console.log('⚠ ' + warning))
     }
 
     return (<>
