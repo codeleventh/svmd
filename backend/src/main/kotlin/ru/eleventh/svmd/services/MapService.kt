@@ -49,7 +49,7 @@ object MapService {
         else throw SvmdException(ApiErrors.NO_MAP_EXIST)
     }
 
-    private suspend fun getSpreadsheetId(mapId: String): String {
+    suspend fun getSpreadsheetId(mapId: String): String {
         val result = dao.getSpreadsheetId(mapId)
         if (result != null) return result
         else throw SvmdException(ApiErrors.NOT_FOUND)
@@ -62,12 +62,9 @@ object MapService {
     }
 
     suspend fun convertMap(identifier: String): ApiResponse {
-        val metadata = getMap(identifier)
-        val spreadsheetId = getSpreadsheetId(identifier)
-        val spreadsheet = CacheService.getSpreadsheet(spreadsheetId)
-
         return try {
-            val (warnings, directives, geojson) = TransformService.transform(spreadsheet)
+            val metadata = getMap(identifier)
+            val (warnings, directives, geojson) = CacheService.getMap(identifier)
             MapResponse(warnings, TransformedMap(metadata, directives, geojson))
         } catch (e: SvmdException) {
             FailResponse(e.errors, e.warnings)
