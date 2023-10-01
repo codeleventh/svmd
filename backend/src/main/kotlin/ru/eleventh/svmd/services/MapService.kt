@@ -64,8 +64,9 @@ object MapService {
     suspend fun convertMap(identifier: String): ApiResponse {
         return try {
             val metadata = getMap(identifier)
-            val (warnings, directives, geojson) = CacheService.getMap(identifier)
-            MapResponse(warnings, TransformedMap(metadata, directives, geojson))
+            val (transformedAt, transformedMap) = CacheService.getMap(identifier)
+            val (warnings, directives, geojson) = transformedMap
+            MapResponse(warnings, TransformedMap(metadata, transformedAt, directives, geojson))
         } catch (e: SvmdException) {
             FailResponse(e.errors, e.warnings)
         }

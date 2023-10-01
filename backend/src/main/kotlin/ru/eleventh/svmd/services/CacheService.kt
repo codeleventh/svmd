@@ -8,7 +8,7 @@ import io.ktor.http.*
 import org.jetbrains.kotlin.konan.properties.Properties
 import org.jetbrains.kotlin.konan.properties.loadProperties
 import ru.eleventh.svmd.model.TransformErrors
-import ru.eleventh.svmd.model.TransformedMapWithWarnings
+import ru.eleventh.svmd.model.TransformationResult
 import java.time.Instant
 import java.time.Instant.now
 
@@ -17,21 +17,22 @@ object CacheService {
     private val appConfig: Properties = loadProperties("src/main/resources/application.properties")
     private val client = HttpClient(CIO) { followRedirects = true }
 
-    // (spreadsheetId, (cachedAt, transformedMap))
-    private val cache = HashMap<String, Pair<Instant, TransformedMapWithWarnings>>()
+    // (spreadsheetId, (cachedAt, transformationResult))
+    private val cache = HashMap<String, Pair<Instant, TransformationResult>>()
     private val cacheLifetime = appConfig.getProperty("svmd.cache.lifetime").toLong()
 
-    suspend fun getMap(identifier: String): TransformedMapWithWarnings {
+    suspend fun getMap(identifier: String): Pair<Instant, TransformationResult> {
         val spreadsheetId = MapService.getSpreadsheetId(identifier)
         val cachedMap = cache[spreadsheetId]
         return (if (cachedMap?.first?.isAfter(now().minusSeconds(cacheLifetime)) == true) {
-            cachedMap.second
+            cachedMap.first to cachedMap.second
         }
         else {
             val csv = downloadSpreadsheet(spreadsheetId)
             val map = TransformService.transform(csv)
-            cache[spreadsheetId] = now() to map
-            map
+            val now = now()
+            cache[spreadsheetId] = now to map
+            now to map
         })
     }
 

@@ -9,9 +9,11 @@ import {Center, Loader} from '@mantine/core'
 import {ErrorTemplate} from './ErrorTemplate'
 import {Footer} from './Footer'
 import {Map} from './Map'
+import {DATETIME_FORMAT} from "../const";
+import dayjs from "dayjs";
 
 interface IParams {
-    mapId: string;
+	mapId: string;
 }
 
 export const MapPage: React.FC = () => {
@@ -43,8 +45,9 @@ export const MapPage: React.FC = () => {
 		dispatch(Actions.setDirectives(directives))
 		dispatch(Actions.setFeatures(geojson.features.map((f, i) => ({...f, index: i}))))
 
+		console.info(`📍 Используется редакция от ${dayjs().format(DATETIME_FORMAT)}`)
 		if (metadata.title) document.title = metadata.title + ' · ' + document.title
-		warnings?.forEach((warning) => console.log('⚠ ' + warning))
+		warnings?.forEach((warning) => console.log('⚠️ ' + warning))
 	}
 
 	return (<>

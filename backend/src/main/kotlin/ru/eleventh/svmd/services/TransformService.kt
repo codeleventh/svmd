@@ -15,7 +15,7 @@ import ru.eleventh.svmd.UNNAMED_COLUMN_PREFIX
 import ru.eleventh.svmd.exceptions.SvmdException
 import ru.eleventh.svmd.model.Errors
 import ru.eleventh.svmd.model.TransformErrors
-import ru.eleventh.svmd.model.TransformedMapWithWarnings
+import ru.eleventh.svmd.model.TransformationResult
 import ru.eleventh.svmd.model.enums.Directive.*
 import ru.eleventh.svmd.model.enums.Directives
 import java.time.DateTimeException
@@ -41,7 +41,7 @@ object TransformService {
         .with(CsvParser.Feature.ALLOW_TRAILING_COMMA)
         .with(CsvParser.Feature.TRIM_SPACES)
 
-    fun transform(csv: String): TransformedMapWithWarnings {
+    fun transform(csv: String): TransformationResult {
         val errors = mutableListOf<String>()
         val warnings = mutableListOf<String>()
 
@@ -174,7 +174,7 @@ object TransformService {
                 errors.add(TransformErrors.NO_GOOD_LINES)
 
             return if (errors.isNotEmpty()) throw SvmdException(errors, warnings) else
-                TransformedMapWithWarnings(warnings, directivesMap, FeatureCollection(validatedFeatures))
+                TransformationResult(warnings, directivesMap, FeatureCollection(validatedFeatures))
         } catch (e: SvmdException) {
             throw e
         } catch (e: Exception) {
