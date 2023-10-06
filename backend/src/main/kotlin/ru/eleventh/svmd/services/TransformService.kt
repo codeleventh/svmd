@@ -1,12 +1,9 @@
 package ru.eleventh.svmd.services
 
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.core.StreamReadFeature
-import com.fasterxml.jackson.dataformat.csv.CsvMapper
-import com.fasterxml.jackson.dataformat.csv.CsvParser
-import com.fasterxml.jackson.dataformat.csv.CsvSchema
-import com.fasterxml.jackson.dataformat.csv.CsvSchema.Column
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.doyaaaaaken.kotlincsv.dsl.context.ExcessFieldsRowBehaviour
+import com.github.doyaaaaaken.kotlincsv.dsl.context.InsufficientFieldsRowBehaviour
+import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import mil.nga.sf.geojson.*
 import org.jetbrains.kotlin.konan.properties.Properties
 import org.jetbrains.kotlin.konan.properties.loadProperties
@@ -27,20 +24,6 @@ object TransformService {
     private val appConfig: Properties = loadProperties("src/main/resources/application.properties")
     private val maxObjects = appConfig.getProperty("svmd.maxobjects").toInt()
 
-    private val headerMapper = CsvMapper()
-        .readerForListOf(String::class.java)
-        .with(CsvParser.Feature.WRAP_AS_ARRAY)
-        .with(CsvParser.Feature.ALLOW_TRAILING_COMMA)
-        .with(CsvParser.Feature.SKIP_EMPTY_LINES)
-        .with(CsvParser.Feature.TRIM_SPACES)
-
-    private val entityMapper = CsvMapper()
-        .readerForMapOf(String::class.java)
-        .with(CsvParser.Feature.EMPTY_STRING_AS_NULL)
-        .with(CsvParser.Feature.IGNORE_TRAILING_UNMAPPABLE)
-        .with(CsvParser.Feature.ALLOW_TRAILING_COMMA)
-        .with(CsvParser.Feature.TRIM_SPACES)
-
     fun transform(csv: String): TransformationResult {
         val errors = mutableListOf<String>()
         val warnings = mutableListOf<String>()
@@ -51,9 +34,12 @@ object TransformService {
                 throw SvmdException(errors, warnings)
             }
 
-            val rawHeaders = headerMapper
-                .readValues<List<String>>(csv)
-                .next()
+            val data = csvReader {
+                insufficientFieldsRowBehaviour = InsufficientFieldsRowBehaviour.EMPTY_STRING
+                excessFieldsRowBehaviour = ExcessFieldsRowBehaviour.TRIM
+            }.readAll(csv)
+            val rawHeaders = data.first()
+            val features: List<List<String?>> = data.drop(1)
 
             // helpers
             val split = { h: String -> h.split(' ', '\t', '\n') }
@@ -70,12 +56,12 @@ object TransformService {
             // example: (2 -> ("Building address #CARD_INFO #SEARCH", "Building address"))
             val headersMap = HashMap<Int, Pair<String, String>>()
 
-            // Modifying entries of those two maps
+            // Adding entries to these two maps
             val refinedHeaders = rawHeaders.map { refineHeader(it) } // temporary object
             rawHeaders.forEachIndexed { i, rawHeader ->
                 val splitHeader = split(rawHeader)
                 val refinedHeader = refinedHeaders[i].ifEmpty {
-                    var newName = "${UNNAMED_COLUMN_PREFIX}_${i + 1}"
+                    var newName = "${UNNAMED_COLUMN_PREFIX}${i + 1}"
                     while (
                         refinedHeaders.find { existing -> existing == newName } != null ||
                         headersMap.values.map { it.second }.find { existing -> existing == newName } != null
@@ -103,17 +89,6 @@ object TransformService {
                 .filter { it.value > 1 }
                 .forEach { errors += TransformErrors.COLUMN_NAME_IS_DUPLICATED(it.key) }
 
-            val headerSchema = CsvSchema.builder()
-                .setUseHeader(true)
-                .setReorderColumns(true)
-                .addColumns(headersMap.entries.map { Column(it.key, it.value.second) }).build()
-            val entities = entityMapper
-                .withFeatures(JsonParser.Feature.IGNORE_UNDEFINED).with(StreamReadFeature.IGNORE_UNDEFINED)
-                .with(headerSchema.withNullValue(null))
-            val features = entities
-                .readValues<Map<String, String>>(csv)
-                .readAll()
-
             if (features.isEmpty()) {
                 errors.add(TransformErrors.NO_LINES)
                 throw SvmdException(errors, warnings)
@@ -130,28 +105,26 @@ object TransformService {
 
             val coordinatesHeader = directivesMap[COORDINATES.directive]!!.first()
             val coordinatesHeaderIndex = headersMap.entries.find { it.value.second == coordinatesHeader }!!.key
-            val validatedFeatures = features.mapIndexed { i, feature ->
-                val coordinates = validateCoordinates(feature[headersMap[coordinatesHeaderIndex]!!.first])
+            val validatedFeatures = features.mapIndexedNotNull { i, feature ->
+                val coordinates = validateCoordinates(feature[coordinatesHeaderIndex])
                 if (coordinates == null) {
                     warnings.add(TransformErrors.WARN_WRONG_COORDINATES(i))
                     null
                 } else {
                     val resultFeature = Feature(coordinates)
                     // cloning feature object with refined parameters names and omitting coordinates param
-                    val props = feature.entries
-                        .mapIndexed { index, entry ->
-                            if (headersMap[index] != null) {
-                                if (headersMap[index]!!.second != coordinatesHeader) {
-                                    headersMap[index]!!.second to entry.value
-                                } else null
-                            } else null
-                        }
-                        .filterNotNull()
-                        .associate { it.first to it.second }
+                    val props = feature.mapIndexedNotNull { index, entry ->
+                        if (headersMap[index] != null
+                            && headersMap[index]?.second != coordinatesHeader
+                            && entry?.trim()?.isNotEmpty() == true
+                        ) {
+                            headersMap[index]?.second to entry.trim()
+                        } else null
+                    }.associate { it.first to it.second }
                     resultFeature.properties = props
                     resultFeature
                 }
-            }.filterNotNull()
+            }
 
             columnsWithFilters.flatten().toSet().forEach { header ->
                 val values = validatedFeatures.mapNotNull { it.properties[header] }.map { it.toString() }

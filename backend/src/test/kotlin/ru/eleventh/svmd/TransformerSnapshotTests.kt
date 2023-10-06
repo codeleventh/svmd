@@ -81,6 +81,16 @@ class TransformerSnapshotTests : SnapshotTest() {
     }
 
     @Test
+    fun `Multiple columns with same name in spreadsheet will not be overwritten`() {
+        val csv1 = "coords #COORDINATES, abc #CARD_PREVIEW, abc #CARD_PREVIEW, abc #CARD_PREVIEW\t\n" +
+                "\"[0,0]\", a, b, c"
+        assert.matchWithSnapshot(transform(csv1), "multiple_columns_with_same_name_in_spreadsheet_will_not_be_overwritten_1")
+        val csv2 = "coords #COORDINATES, #CARD_PREVIEW, #CARD_PREVIEW, #CARD_PREVIEW\t\n" +
+                "\"[0,0]\", a, b, c"
+        assert.matchWithSnapshot(transform(csv2), "multiple_columns_with_same_name_in_spreadsheet_will_not_be_overwritten_2")
+    }
+
+    @Test
     fun `Many columns with same directives`() {
         val csv = "coords #COORDINATES, name1 #NAME, name2 #NAME, color1 #COLOR, " +
                 "color2 #COLOR, filter_select1 #FILTER_SELECT, filter_select2 #FILTER_SELECT, " +
