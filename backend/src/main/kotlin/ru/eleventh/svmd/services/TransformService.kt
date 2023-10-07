@@ -35,6 +35,7 @@ object TransformService {
             }
 
             val data = csvReader {
+                autoRenameDuplicateHeaders = true
                 insufficientFieldsRowBehaviour = InsufficientFieldsRowBehaviour.EMPTY_STRING
                 excessFieldsRowBehaviour = ExcessFieldsRowBehaviour.TRIM
             }.readAll(csv)
@@ -52,9 +53,9 @@ object TransformService {
             val directivesMap = HashMap<String, MutableSet<String>>()
             Directives.forEach { directivesMap[it] = mutableSetOf() }
 
-            // (column_index -> (rawHeader, refinedHeader)
-            // example: (2 -> ("Building address #CARD_INFO #SEARCH", "Building address"))
-            val headersMap = HashMap<Int, Pair<String, String>>()
+            // (column_index -> refinedHeader)
+            // example: (2 -> ("Building address"))
+            val headersMap = HashMap<Int, String>()
 
             // Adding entries to these two maps
             val refinedHeaders = rawHeaders.map { refineHeader(it) } // temporary object
@@ -64,14 +65,14 @@ object TransformService {
                     var newName = "${UNNAMED_COLUMN_PREFIX}${i + 1}"
                     while (
                         refinedHeaders.find { existing -> existing == newName } != null ||
-                        headersMap.values.map { it.second }.find { existing -> existing == newName } != null
+                        headersMap.values.find { it == newName } != null
                     ) newName += "_"
                     newName
                 }
                 splitHeader.forEach {
                     if (Directives.contains(it)) directivesMap[it]!!.add(refinedHeader)
                 }
-                if (directivesMap.values.flatten().contains(refinedHeader)) headersMap[i] = rawHeader to refinedHeader
+                if (directivesMap.values.flatten().contains(refinedHeader)) headersMap[i] = refinedHeader
             }
 
             if (directivesMap[COORDINATES.directive]!!.size == 0) {
@@ -85,14 +86,14 @@ object TransformService {
             listOf(CARD_LINK, COLOR, CARD_TEXT, NAME).map { it.directive }.forEach {
                 if (directivesMap[it]!!.size > 1) errors += TransformErrors.DIRECTIVE_ON_MULTIPLE_COLUMNS(it)
             }
-            headersMap.values.map { it.second }.groupingBy { it }.eachCount().entries
+            headersMap.values.groupingBy { it }.eachCount().entries
                 .filter { it.value > 1 }
                 .forEach { errors += TransformErrors.COLUMN_NAME_IS_DUPLICATED(it.key) }
 
             if (features.isEmpty()) {
                 errors.add(TransformErrors.NO_LINES)
                 throw SvmdException(errors, warnings)
-            } else if (features.size >= maxObjects) {
+            } else if (features.size >= Config.maxObjects) {
                 errors.add(TransformErrors.TOO_MUCH_OBJECTS(features.size))
                 throw SvmdException(errors, warnings)
             }
@@ -104,7 +105,7 @@ object TransformService {
             }
 
             val coordinatesHeader = directivesMap[COORDINATES.directive]!!.first()
-            val coordinatesHeaderIndex = headersMap.entries.find { it.value.second == coordinatesHeader }!!.key
+            val coordinatesHeaderIndex = headersMap.entries.find { it.value == coordinatesHeader }!!.key
             val validatedFeatures = features.mapIndexedNotNull { i, feature ->
                 val coordinates = validateCoordinates(feature[coordinatesHeaderIndex])
                 if (coordinates == null) {
@@ -115,10 +116,10 @@ object TransformService {
                     // cloning feature object with refined parameters names and omitting coordinates param
                     val props = feature.mapIndexedNotNull { index, entry ->
                         if (headersMap[index] != null
-                            && headersMap[index]?.second != coordinatesHeader
+                            && headersMap[index] != coordinatesHeader
                             && entry?.trim()?.isNotEmpty() == true
                         ) {
-                            headersMap[index]?.second to entry.trim()
+                            headersMap[index] to entry.trim()
                         } else null
                     }.associate { it.first to it.second }
                     resultFeature.properties = props
