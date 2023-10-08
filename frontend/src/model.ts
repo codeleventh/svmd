@@ -9,7 +9,7 @@ export enum TileProvider {
     LIGHT = 'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
     DARK = 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png',
     LIGHT_NOLABELS = 'https://{s}.basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png',
-    DARK_NOLABELS = 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}.png',
+    DARK_NO_LABELS = 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}.png',
     VOYAGER = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
     // SATELLITE = 'TODO:',
 }

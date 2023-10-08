@@ -12,7 +12,7 @@ export const SVMD_VERSION = '0.1' // TODO: get from package.json
 
 export const DEFAULT_FEATURE_NAME = 'Без названия'
 
-export const CARDLINK_TEXT = 'Подробнее'
+export const CARD_LINK_TEXT = 'Подробнее'
 
 export const MARKER_RADIUS = 7 // TODO: X for mobile, Y for PC
 export const DEFAULT_PADDING = 10 // spacing between popup and screen borders, px
