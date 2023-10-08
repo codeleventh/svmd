@@ -9,8 +9,8 @@ import {Center, Loader} from '@mantine/core'
 import {ErrorTemplate} from './ErrorTemplate'
 import {Footer} from './Footer'
 import {Map} from './Map'
-import {DATETIME_FORMAT} from "../const";
-import dayjs from "dayjs";
+import {DATETIME_FORMAT} from '../const'
+import dayjs from 'dayjs'
 
 interface IParams {
 	mapId: string;

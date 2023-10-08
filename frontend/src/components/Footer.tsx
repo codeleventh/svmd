@@ -15,46 +15,46 @@ import {isEmpty} from 'ramda'
 import {Directive} from '../model'
 
 export const Footer: React.FC = () => {
-    const dispatch = useDispatch()
-    const theme = useMantineTheme()
+	const dispatch = useDispatch()
+	const theme = useMantineTheme()
 
-    const features = useSelector(featuresSelector)
-    const filters = useSelector((store: IStore) => store.filters)
-    const legendHeaders = useSelector(headersByDirectiveSelector(Directive.FOOTER_LEGEND))
-    const sliderHeaders = useSelector(headersByDirectiveSelector(Directive.FOOTER_SLIDER))
-    const sliders = sliderHeaders.map(headerToUniqueProps(features))
+	const features = useSelector(featuresSelector)
+	const filters = useSelector((store: IStore) => store.filters)
+	const legendHeaders = useSelector(headersByDirectiveSelector(Directive.FOOTER_LEGEND))
+	const sliderHeaders = useSelector(headersByDirectiveSelector(Directive.FOOTER_SLIDER))
+	const sliders = sliderHeaders.map(headerToUniqueProps(features))
 
-    const onComponentChange = useCallback((f: filterChangeOptions<number>) => {
-        const {type, header, value, isDate, isInit} = f
-        dispatch(Actions.setFilters({
-            ...filters,
-            ...{[type]: {...filters[type], [header]: {value, isDate, isInit}}}
-        }))
-    }, [filters])
+	const onComponentChange = useCallback((f: filterChangeOptions<number>) => {
+		const {type, header, value, isDate, isInit} = f
+		dispatch(Actions.setFilters({
+			...filters,
+			...{[type]: {...filters[type], [header]: {value, isDate, isInit}}}
+		}))
+	}, [filters])
 
-    return <SimpleGrid
-        id="footer"
-        className={'leaflet-override'} spacing={'sm'}
-        sx={(theme) => {
-            const color = theme.colorScheme === 'dark' ? 'black' : 'white'
-            return {
-                boxShadow: `0 -5px 10px 0 ${color} !important`,
-                backgroundColor: color
-            }
-        }}>
+	return <SimpleGrid
+		id="footer"
+		className={'leaflet-override'} spacing={'sm'}
+		sx={(theme) => {
+			const color = theme.colorScheme === 'dark' ? 'black' : 'white'
+			return {
+				boxShadow: `0 -5px 10px 0 ${color} !important`,
+				backgroundColor: color
+			}
+		}}>
 
-        {!isEmpty(legendHeaders) && <Legend/>}
+		{!isEmpty(legendHeaders) && <Legend/>}
 
-        {sliders.map((slider, i) =>
-            <SvmdSlider
-                key={`slider_${i}`}
-                initField={filters.sliders[slider[0]]}
-                valuesWithHeader={slider}
-                onChange={onComponentChange}
-            />)}
+		{sliders.map((slider, i) =>
+			<SvmdSlider
+				key={`slider_${i}`}
+				initField={filters.sliders[slider[0]]}
+				valuesWithHeader={slider}
+				onChange={onComponentChange}
+			/>)}
 
-        {(!isEmpty(legendHeaders) || notEmpty(sliders)) && <Divider variant={'dashed'} color={theme.colors.gray[7]}/>}
+		{(!isEmpty(legendHeaders) || notEmpty(sliders)) && <Divider variant={'dashed'} color={theme.colors.gray[7]}/>}
 
-        <Attribution/>
-    </SimpleGrid>
+		<Attribution/>
+	</SimpleGrid>
 }

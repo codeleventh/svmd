@@ -22,36 +22,36 @@ dayjs.locale('ru-RU')
 dayjs.extend(customParseFormat)
 
 export const App: React.FC = () => {
-    const fallBackComponent = ({error}: FallbackProps) => <ErrorTemplate
-        errors={[Errors.FRONTEND_IS_BROKEN(`${error.name}: ${error.message}}}`)]}
-        stackTrace={error.stack}
-    />
+	const fallBackComponent = ({error}: FallbackProps) => <ErrorTemplate
+		errors={[Errors.FRONTEND_IS_BROKEN(`${error.name}: ${error.message}}}`)]}
+		stackTrace={error.stack}
+	/>
 
-    return <React.StrictMode><Provider store={store}>
-        <MantineProvider
-            withGlobalStyles
-            theme={{
-                colorScheme: 'dark',
-                primaryColor: 'indigo',
-            }}>
-            <ErrorBoundary onReset={noop} FallbackComponent={fallBackComponent}>
-                <Router>
-                    <Switch>
-                        <Route exact path="/">
-                            <MainPage/>
-                        </Route>
-                        <Route exact path="/create">
-                            <CreatePage/>
-                        </Route>
-                        <Route path={`/:mapId(${MAP_ID_REGEX})`}>
-                            <MapPage/>
-                        </Route>
-                        <Route>
-                            <ErrorTemplate errors={['Страница не найдена']}/>
-                        </Route>
-                    </Switch>
-                </Router>
-            </ErrorBoundary>
-        </MantineProvider>
-    </Provider></React.StrictMode>
+	return <React.StrictMode><Provider store={store}>
+		<MantineProvider
+			withGlobalStyles
+			theme={{
+				colorScheme: 'dark',
+				primaryColor: 'indigo',
+			}}>
+			<ErrorBoundary onReset={noop} FallbackComponent={fallBackComponent}>
+				<Router>
+					<Switch>
+						<Route exact path="/">
+							<MainPage/>
+						</Route>
+						<Route exact path="/create">
+							<CreatePage/>
+						</Route>
+						<Route path={`/:mapId(${MAP_ID_REGEX})`}>
+							<MapPage/>
+						</Route>
+						<Route>
+							<ErrorTemplate errors={['Страница не найдена']}/>
+						</Route>
+					</Switch>
+				</Router>
+			</ErrorBoundary>
+		</MantineProvider>
+	</Provider></React.StrictMode>
 }

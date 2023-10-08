@@ -17,4 +17,4 @@ export const normalizeValues: (values: string[]) => string[] = pipe(defaultTo([]
 export const splitTags: (tags: string) => string[] = pipe(defaultTo(''), split(TAG_SEPARATOR), normalizeValues)
 
 export const headerToUniqueProps: (features: IFeature[]) => (header: string) => ValuesWithHeader = (features) => (header) =>
-    pair(header, uniq(features.map(path<string>(['properties', header])).map(__ => __!).flatMap(splitTags)))
+	pair(header, uniq(features.map(path<string>(['properties', header])).map(__ => __!).flatMap(splitTags)))
