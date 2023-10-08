@@ -1,4 +1,4 @@
-import '../css/card.css'
+import '../css/map/card.css'
 import '@splidejs/react-splide/css'
 
 import React, {useMemo} from 'react'

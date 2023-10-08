@@ -26,7 +26,7 @@ import {DEFAULT_PADDING, MARKER_RADIUS, MARKER_STYLE} from '../const'
 import {Directive, IFeatureIndexed, TileProvider} from '../model'
 import {calculateBounds} from './mapUtils'
 
-import '../css/leaflet.css'
+import '../css/map/leaflet.css'
 import {splitTags} from '../util'
 
 type Marker = (LeafletPolygon | LeafletCircleMarker);
