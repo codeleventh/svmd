@@ -7,6 +7,7 @@ import {
 	filtersSelector,
 	headerByDirectiveSelector,
 	headersByDirectiveSelector,
+	legendColorsSelector,
 	legendHeaderSelector,
 	metadataSelector,
 	modalSelector
@@ -22,9 +23,10 @@ import {Meerkat} from './Meerkat'
 import {equals} from 'ramda'
 import {FilterModal} from './FilterModal'
 import {Header} from './Header'
+import {useMantineTheme} from '@mantine/core'
 import {DEFAULT_PADDING, MARKER_RADIUS, MARKER_STYLE} from '../const'
 import {Directive, IFeatureIndexed, TileProvider} from '../model'
-import {calculateBounds} from './mapUtils'
+import {calculateBounds, calculateColor} from './mapUtils'
 
 import '../css/map/leaflet.css'
 import {splitTags} from '../util'
@@ -38,12 +40,21 @@ export const Map: React.FC = () => {
 	const filteredFeatures = useSelector(filteredFeaturesSelector)
 	const searchHeaders = useSelector(headersByDirectiveSelector(Directive.SEARCH))
 	const colorHeader = useSelector(headerByDirectiveSelector(Directive.COLOR))
+	const legendColors = useSelector(legendColorsSelector)
 	const legendHeader = useSelector(legendHeaderSelector)
 	const isModalOpened = useSelector(modalSelector)
 
+	const theme = useMantineTheme()
 	const markerRefs = useRef(Array(features.length).fill(undefined))
 	const headerHeight = searchHeaders.length ? 125 : 0
 	// TODO: ↑ hardcoded cause useResizeObserver hook won't work for some reason
+
+	const updateColors = (featIndex: number) => {
+		const ref = markerRefs?.current[featIndex]
+		if (!ref) return
+		const color = calculateColor(features[featIndex], colorHeader!, legendColors, legendHeader, theme.colors.indigo[6], metadata.defaultColor)
+		ref.setStyle({color: color, fillColor: color})
+	}
 
 	useEffect(() => {
 		const showPopup = (id: number) => {
@@ -66,6 +77,10 @@ export const Map: React.FC = () => {
 		if (index !== -1) showPopup(index)
 	}, [filteredFeatures, filters])
 
+	useEffect(() => {
+		features.forEach(f => updateColors(f.index))
+	}, [legendHeader])
+
 	const toMarker = (feature: IFeatureIndexed) => {
 		const {index, geometry} = feature
 		if (geometry.type === 'Point') {
@@ -76,6 +91,7 @@ export const Map: React.FC = () => {
 				radius={MARKER_RADIUS}
 				ref={(feature) => {
 					markerRefs.current[index] = feature
+					updateColors(index)
 				}}
 				center={geometry.coordinates as LatLngExpression}>
 				<Card key={index} cursedMargin={headerHeight} feature={feature}/>
@@ -86,6 +102,7 @@ export const Map: React.FC = () => {
 				key={index}
 				ref={(feature) => {
 					markerRefs.current[index] = feature
+					updateColors(index)
 				}}
 				positions={geometry.coordinates as LatLngExpression[][]}>
 				<Card key={index} cursedMargin={headerHeight} feature={feature}/>

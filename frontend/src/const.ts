@@ -1,4 +1,5 @@
 import {PathProps} from '@react-leaflet/core/types/path'
+import {MantineThemeOverride} from "@mantine/styles/lib/theme/types";
 
 export const MAP_ID_REGEX = '[0-9A-Z]{8}'
 
@@ -11,6 +12,12 @@ export const PROJECT_START_YEAR = 2022
 export const SVMD_VERSION = '0.1' // TODO: get from package.json
 
 export const DEFAULT_FEATURE_NAME = 'Без названия'
+
+export const DARK_THEME: MantineThemeOverride = {
+	dateFormat: DATE_FORMAT,
+	colorScheme: 'dark',
+	primaryColor: 'indigo',
+}
 
 export const CARD_LINK_TEXT = 'Подробнее'
 

@@ -10,7 +10,7 @@ import {ErrorTemplate} from './components/ErrorTemplate'
 import {CreatePage} from './components/CreatePage'
 import {MainPage} from './components/MainPage'
 import MapPage from './components/MapPage'
-import {MAP_ID_REGEX} from './const'
+import {DARK_THEME, MAP_ID_REGEX} from './const'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {noop} from './util'
 import {MantineProvider} from '@mantine/core'
@@ -30,10 +30,7 @@ export const App: React.FC = () => {
 	return <React.StrictMode><Provider store={store}>
 		<MantineProvider
 			withGlobalStyles
-			theme={{
-				colorScheme: 'dark',
-				primaryColor: 'indigo',
-			}}>
+			theme={DARK_THEME}>
 			<ErrorBoundary onReset={noop} FallbackComponent={fallBackComponent}>
 				<Router>
 					<Switch>
