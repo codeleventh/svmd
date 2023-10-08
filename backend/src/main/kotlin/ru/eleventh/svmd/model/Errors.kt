@@ -1,11 +1,7 @@
 package ru.eleventh.svmd.model
 
 import io.ktor.http.*
-import org.jetbrains.kotlin.konan.properties.Properties
-import org.jetbrains.kotlin.konan.properties.loadProperties
-
-private val appConfig: Properties = loadProperties("src/main/resources/application.properties")
-private val maxObjects = appConfig.getProperty("svmd.maxobjects").toInt()
+import ru.eleventh.svmd.Config
 
 object Errors {
     val UNEXPECTED_ERROR = { err: Throwable -> "Неожиданная ошибка: ${err.message}" }
@@ -46,6 +42,6 @@ object TransformErrors {
         "В колонке «${head}» указано больше одного фильтра"
     }
     val TOO_MUCH_OBJECTS = { cnt: Int ->
-        "Слишком много объектов в таблице ($cnt), максимально разрешенное — $maxObjects"
+        "Слишком много объектов в таблице ($cnt), максимально разрешенное — ${Config.maxObjects}"
     }
 }

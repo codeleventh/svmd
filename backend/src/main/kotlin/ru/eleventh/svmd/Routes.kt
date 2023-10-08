@@ -9,7 +9,6 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.jetbrains.kotlin.konan.properties.loadProperties
 import ru.eleventh.svmd.model.db.MapMeta
 import ru.eleventh.svmd.model.db.NewMapMeta
 import ru.eleventh.svmd.model.db.NewUser
@@ -18,12 +17,8 @@ import ru.eleventh.svmd.model.responses.ApiResponse
 import ru.eleventh.svmd.model.responses.MapResponse
 import ru.eleventh.svmd.services.MapService
 import ru.eleventh.svmd.services.UserService
-import java.util.*
 
 fun Application.configureRouting() {
-    val appConfig: Properties = loadProperties("src/main/resources/application.properties")
-    val cacheLifetime = appConfig.getProperty("svmd.cache.lifetime").toInt()
-
     install(ContentNegotiation) {
         jackson {
             disable(SerializationFeature.INDENT_OUTPUT)
@@ -50,7 +45,7 @@ fun Application.configureRouting() {
                     if (transformedMap is MapResponse) {
                         call.response.header(
                             HttpHeaders.CacheControl,
-                            cacheLifetime
+                            Config.cacheLifetime
                         )
                     }
                     call.respond(transformedMap)

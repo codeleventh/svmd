@@ -3,8 +3,8 @@ package ru.eleventh.svmd.services
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.jetbrains.exposed.sql.*
+import ru.eleventh.svmd.Config
 import ru.eleventh.svmd.DatabaseConnection.dbQuery
-import ru.eleventh.svmd.SVMD_VERSION
 import ru.eleventh.svmd.model.db.*
 import ru.eleventh.svmd.model.enums.Lang
 import ru.eleventh.svmd.model.enums.TileProvider
@@ -15,7 +15,6 @@ val dao = PersistenceService()
 class PersistenceService {
 
     private val mapper = jacksonObjectMapper()
-    // TODO: sane (de)serialization
 
     private fun toMap(row: ResultRow): MapMeta = MapMeta(
         identifier = row[MapsTable.identifier],
@@ -50,7 +49,7 @@ class PersistenceService {
                 it[tileProvider] = newMap.tileProvider?.name
                 it[createdAt] = Instant.now()
                 it[accessed] = 0
-                it[svmdVersion] = SVMD_VERSION // TODO: use property
+                it[svmdVersion] = Config.version
             }
         }
         return insertStatement.resultedValues?.singleOrNull()?.let(this::toMap)?.identifier

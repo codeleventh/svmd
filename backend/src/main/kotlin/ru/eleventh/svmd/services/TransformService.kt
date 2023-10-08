@@ -5,8 +5,7 @@ import com.github.doyaaaaaken.kotlincsv.dsl.context.ExcessFieldsRowBehaviour
 import com.github.doyaaaaaken.kotlincsv.dsl.context.InsufficientFieldsRowBehaviour
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import mil.nga.sf.geojson.*
-import org.jetbrains.kotlin.konan.properties.Properties
-import org.jetbrains.kotlin.konan.properties.loadProperties
+import ru.eleventh.svmd.Config
 import ru.eleventh.svmd.DATE_FORMAT
 import ru.eleventh.svmd.UNNAMED_COLUMN_PREFIX
 import ru.eleventh.svmd.exceptions.SvmdException
@@ -20,9 +19,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 object TransformService {
-
-    private val appConfig: Properties = loadProperties("src/main/resources/application.properties")
-    private val maxObjects = appConfig.getProperty("svmd.maxobjects").toInt()
 
     fun transform(csv: String): TransformationResult {
         val errors = mutableListOf<String>()
