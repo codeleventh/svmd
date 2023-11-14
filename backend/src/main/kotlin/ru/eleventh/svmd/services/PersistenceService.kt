@@ -35,24 +35,17 @@ class PersistenceService {
         )
     }
 
-    suspend fun createMap(newIdentifier: String, newMap: NewMapMeta): String? {
+    suspend fun createMap(newIdentifier: String, newMap: NewMap): String {
         val insertStatement = dbQuery {
             MapsTable.insert {
                 it[identifier] = newIdentifier
-                it[title] = newMap.title
-                it[center] = mapper.writeValueAsString(newMap.center)
                 it[spreadsheetId] = newMap.spreadsheetId
-                it[lang] = newMap.lang?.name
-                it[logo] = newMap.logo
-                it[link] = newMap.link
-                it[defaultColor] = newMap.defaultColor
-                it[tileProvider] = newMap.tileProvider?.name
                 it[createdAt] = Instant.now()
                 it[accessed] = 0
                 it[svmdVersion] = Config.version
             }
         }
-        return insertStatement.resultedValues?.singleOrNull()?.let(this::toMap)?.identifier
+        return insertStatement.resultedValues?.single()!!.let(this::toMap).identifier
     }
 
     suspend fun getMaps(): List<MapMeta> = dbQuery {

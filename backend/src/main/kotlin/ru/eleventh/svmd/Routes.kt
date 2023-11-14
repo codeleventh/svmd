@@ -12,7 +12,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import ru.eleventh.svmd.exceptions.SvmdException
 import ru.eleventh.svmd.model.db.MapMeta
-import ru.eleventh.svmd.model.db.NewMapMeta
+import ru.eleventh.svmd.model.db.NewMap
 import ru.eleventh.svmd.model.db.NewUser
 import ru.eleventh.svmd.model.db.User
 import ru.eleventh.svmd.model.responses.ApiResponse
@@ -40,7 +40,9 @@ fun Application.configureRouting() {
     routing {
         route("api") {
             route("meta") {
-                post { call.respond(MapService.createMap(call.receive<NewMapMeta>())!!) }
+                post {
+                    call.respond(SuccessResponse(MapService.createMap(call.receive<NewMap>())))
+                }
                 get { call.respond(MapService.getMaps()) }
                 get("{mapId}") { call.respond(MapService.getMap(call.parameters["mapId"]!!.uppercase())) }
                 put("{mapId}") {

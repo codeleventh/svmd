@@ -4,7 +4,7 @@ import ru.eleventh.svmd.exceptions.SvmdException
 import ru.eleventh.svmd.model.ApiErrors
 import ru.eleventh.svmd.model.TransformedMap
 import ru.eleventh.svmd.model.db.MapMeta
-import ru.eleventh.svmd.model.db.NewMapMeta
+import ru.eleventh.svmd.model.db.NewMap
 import ru.eleventh.svmd.model.responses.ApiResponse
 import ru.eleventh.svmd.model.responses.FailResponse
 import ru.eleventh.svmd.model.responses.MapResponse
@@ -33,7 +33,7 @@ object MapService {
 
     private fun isSpreadsheetValid(id: String): Boolean = id.matches(Regex("2PACX-[-_a-zA-Z0-9]{80}"))
 
-    suspend fun createMap(newMap: NewMapMeta): String? {
+    suspend fun createMap(newMap: NewMap): String {
         if (!isSpreadsheetValid(newMap.spreadsheetId))
             throw SvmdException(ApiErrors.BAD_SPREADSHEET_ID)
         return dao.createMap(newIdentifier(), newMap)

@@ -6,23 +6,17 @@ import org.jetbrains.exposed.sql.javatime.timestamp
 import ru.eleventh.svmd.model.Color
 import ru.eleventh.svmd.model.Link
 import ru.eleventh.svmd.model.enums.Lang
+import ru.eleventh.svmd.model.enums.Theme
 import ru.eleventh.svmd.model.enums.TileProvider
 import java.time.Instant
 
-data class NewMapMeta(
-    val spreadsheetId: String,
-    val title: String,
-    val center: Position?,
-    val lang: Lang?,
-    val logo: Link?,
-    val link: Link?,
-    val defaultColor: Color?,
-    val tileProvider: TileProvider?
+data class NewMap(
+    val spreadsheetId: String
 )
 
 data class MapMeta(
     val identifier: String, // example: W92S553T
-    val title: String,
+    val title: String?,
     val center: Position?,
     val createdAt: Instant,
     val lang: Lang?,
@@ -34,7 +28,7 @@ data class MapMeta(
 
 object MapsTable : Table() {
     val identifier = text("identifier")
-    val title = text("title")
+    val title = text("title").nullable()
     val center = text("center").nullable()
     val createdAt = timestamp("created_at")
     val lang = text("lang").nullable()
