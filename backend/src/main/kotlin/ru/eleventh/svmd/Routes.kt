@@ -5,16 +5,20 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
+import io.ktor.server.application.hooks.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import ru.eleventh.svmd.exceptions.SvmdException
 import ru.eleventh.svmd.model.db.MapMeta
 import ru.eleventh.svmd.model.db.NewMapMeta
 import ru.eleventh.svmd.model.db.NewUser
 import ru.eleventh.svmd.model.db.User
 import ru.eleventh.svmd.model.responses.ApiResponse
+import ru.eleventh.svmd.model.responses.FailResponse
 import ru.eleventh.svmd.model.responses.MapResponse
+import ru.eleventh.svmd.model.responses.SuccessResponse
 import ru.eleventh.svmd.services.MapService
 import ru.eleventh.svmd.services.UserService
 
@@ -26,6 +30,13 @@ fun Application.configureRouting() {
             registerModule(JavaTimeModule())
         }
     }
+    install(createApplicationPlugin("exception handler") {
+        on(CallFailed) { call, cause ->
+            if (cause is SvmdException)
+                call.respond(cause.toResponse())
+            else call.respond(FailResponse(cause.message.orEmpty()))
+        }
+    })
     routing {
         route("api") {
             route("meta") {
