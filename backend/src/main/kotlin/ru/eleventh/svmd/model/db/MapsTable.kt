@@ -23,6 +23,7 @@ data class MapMeta(
     val logo: Link?,
     val link: Link?,
     val defaultColor: Color?,
+    val theme: Theme?,
     val tileProvider: TileProvider?,
 )
 
@@ -36,6 +37,7 @@ object MapsTable : Table() {
     val link = text("link").nullable()
     val defaultColor = text("default_color").nullable()
     val tileProvider = text("tile_provider").nullable()
+    val theme = text("theme").nullable()
     // ↓ these fields shouldn't been sent on front-end side
     val spreadsheetId = text("spreadsheet_id")
     val svmdVersion = text("svmd_version")

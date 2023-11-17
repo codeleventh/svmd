@@ -7,6 +7,7 @@ import ru.eleventh.svmd.Config
 import ru.eleventh.svmd.DatabaseConnection.dbQuery
 import ru.eleventh.svmd.model.db.*
 import ru.eleventh.svmd.model.enums.Lang
+import ru.eleventh.svmd.model.enums.Theme
 import ru.eleventh.svmd.model.enums.TileProvider
 import java.time.Instant
 
@@ -25,6 +26,7 @@ class PersistenceService {
         logo = row[MapsTable.logo],
         link = row[MapsTable.link],
         defaultColor = row[MapsTable.defaultColor],
+        theme = Theme.values().find { it.name == row[MapsTable.theme] },
         tileProvider = TileProvider.values().find { it.name == row[MapsTable.lang] },
     )
 
@@ -82,6 +84,7 @@ class PersistenceService {
             it[logo] = map.logo
             it[link] = map.link
             it[defaultColor] = map.defaultColor
+            it[theme] = map.theme?.name
             it[tileProvider] = map.tileProvider?.name
         }
     }
