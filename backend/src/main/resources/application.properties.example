@@ -1,0 +1,6 @@
+svmd.cache.lifetime = 300
+svmd.maxobjects = 2048
+svmd.db.host=localhost
+svmd.db.name=svmd
+svmd.db.username=admin
+svmd.db.password=admin

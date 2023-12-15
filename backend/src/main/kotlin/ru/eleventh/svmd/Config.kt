@@ -5,9 +5,11 @@ import com.typesafe.config.ConfigFactory
 
 object Config {
     private val config: Config = ConfigFactory.load()
-
-    const val maxObjects = 2048
-    const val cacheLifetime = 300L
-    const val databasePath = ".././database.sqlite3"
-    const val version = "?"
+    val maxObjects = config.getInt("svmd.maxobjects")
+    val cacheLifetime = config.getLong("svmd.cache.lifetime")
+    val databaseHost = config.getString("svmd.db.host")
+    val databaseName = config.getString("svmd.db.name")
+    val databaseUsername = config.getString("svmd.db.username")
+    val databasePassword = config.getString("svmd.db.password")
+    val version = "?"
 }
