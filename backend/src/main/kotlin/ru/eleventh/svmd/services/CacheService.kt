@@ -22,8 +22,7 @@ object CacheService {
         val cachedMap = cache[spreadsheetId]
         return (if (cachedMap?.first?.isAfter(now().minusSeconds(Config.cacheLifetime)) == true) {
             cachedMap.first to cachedMap.second
-        }
-        else {
+        } else {
             val csv = downloadSpreadsheet(spreadsheetId)
             val map = TransformService.transform(csv)
             val now = now()

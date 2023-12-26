@@ -33,29 +33,29 @@ object MapService {
 
     private fun isSpreadsheetValid(id: String): Boolean = id.matches(Regex("2PACX-[-_a-zA-Z0-9]{80}"))
 
-    suspend fun createMap(newMap: NewMap): String {
+    fun createMap(newMap: NewMap): String {
         if (!isSpreadsheetValid(newMap.spreadsheetId))
             throw SvmdException(ApiErrors.BAD_SPREADSHEET_ID)
         return dao.createMap(newIdentifier(), newMap)
     }
 
-    suspend fun getMaps(): List<MapMeta> = dao.getMaps()
+    fun getMapsByUser(userId: Long): List<MapMeta> {
+        return dao.getMapsByUser(userId)
+    }
 
-    fun getMapsByUser(): Nothing = TODO()
-
-    suspend fun getMap(identifier: String): MapMeta {
+    fun getMap(identifier: String): MapMeta {
         val result = dao.getMap(identifier)
         if (result != null) return result
         else throw SvmdException(ApiErrors.NO_MAP_EXIST)
     }
 
-    suspend fun getSpreadsheetId(mapId: String): String {
+    fun getSpreadsheetId(mapId: String): String {
         val result = dao.getSpreadsheetId(mapId)
         if (result != null) return result
         else throw SvmdException(ApiErrors.NOT_FOUND)
     }
 
-    suspend fun updateMap(identifier: String, map: MapMeta): Boolean {
+    fun updateMap(identifier: String, map: MapMeta): Boolean {
         if (identifier != map.identifier)
             throw SvmdException(ApiErrors.IDS_DONT_MATCH)
         return dao.updateMap(map) == 1

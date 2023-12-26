@@ -27,6 +27,7 @@ class PersistenceService {
         link = row[MapsTable.link],
         defaultColor = row[MapsTable.defaultColor],
         theme = Theme.values().find { it.name == row[MapsTable.theme] },
+        owner = row[MapsTable.owner],
         tileProvider = TileProvider.values().find { it.name == row[MapsTable.lang] },
     )
 
@@ -34,10 +35,11 @@ class PersistenceService {
         return User(
             id = row[UsersTable.id],
             email = row[UsersTable.email],
+            password = row[UsersTable.password]
         )
     }
 
-    suspend fun createMap(newIdentifier: String, newMap: NewMap): String {
+    fun createMap(newIdentifier: String, newMap: NewMap): String {
         val insertStatement = dbQuery {
             MapsTable.insert {
                 it[identifier] = newIdentifier
@@ -50,11 +52,11 @@ class PersistenceService {
         return insertStatement.resultedValues?.single()!!.let(this::toMap).identifier
     }
 
-    suspend fun getMaps(): List<MapMeta> = dbQuery {
-        MapsTable.selectAll().map(this::toMap)
+    fun getMapsByUser(userId: Long): List<MapMeta> = dbQuery {
+        MapsTable.select { MapsTable.owner eq userId }.map(this::toMap)
     }
 
-    suspend fun getMap(identifier: String): MapMeta? = dbQuery {
+    fun getMap(identifier: String): MapMeta? = dbQuery {
         val result = MapsTable
             .select { MapsTable.identifier eq identifier }
             .singleOrNull()
@@ -69,14 +71,14 @@ class PersistenceService {
         result?.let { toMap(it) }
     }
 
-    suspend fun getSpreadsheetId(identifier: String): String? = dbQuery {
+    fun getSpreadsheetId(identifier: String): String? = dbQuery {
         MapsTable
             .select { MapsTable.identifier eq identifier }
             .map { row -> row[MapsTable.spreadsheetId] }
             .singleOrNull()
     }
 
-    suspend fun updateMap(map: MapMeta): Int = dbQuery {
+    fun updateMap(map: MapMeta): Int = dbQuery {
         MapsTable.update({ MapsTable.identifier eq map.identifier }) {
             it[title] = map.title
             it[center] = mapper.writeValueAsString(map.center)
@@ -89,25 +91,32 @@ class PersistenceService {
         }
     }
 
-    suspend fun createUser(newUser: NewUser): Long? {
+    fun createUser(newUser: NewUser): Long? {
         val insertStatement = dbQuery {
             UsersTable.insert { it[email] = newUser.email }
         }
         return insertStatement.resultedValues?.singleOrNull()?.let(this::toUser)?.id
     }
 
-    suspend fun getUsers(): List<User> = dbQuery {
+    fun getUsers(): List<User> = dbQuery {
         UsersTable.selectAll().map(this::toUser)
     }
 
-    suspend fun getUser(id: Long): User? = dbQuery {
+    fun getUser(id: Long): User? = dbQuery {
         UsersTable
             .select { UsersTable.id eq id }
             .map(this::toUser)
             .singleOrNull()
     }
 
-    suspend fun updateUser(user: User): Int = dbQuery {
+    fun getUserByEmail(email: String): User? = dbQuery {
+        UsersTable
+            .select { UsersTable.email eq email }
+            .map(this::toUser)
+            .singleOrNull()
+    }
+
+    fun updateUser(user: User): Int = dbQuery {
         UsersTable.update({ UsersTable.id eq user.id }) {
             it[email] = user.email
         }

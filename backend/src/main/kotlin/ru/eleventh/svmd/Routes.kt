@@ -6,6 +6,7 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.application.hooks.*
+import io.ktor.server.auth.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -23,6 +24,18 @@ import ru.eleventh.svmd.services.MapService
 import ru.eleventh.svmd.services.UserService
 
 fun Application.configureRouting() {
+    install(Authentication) {
+        basic {
+            validate { credentials ->
+                val user = UserService.getUserByEmail(credentials.name)
+                if (user?.password == credentials.password) {
+                    UserIdPrincipal(credentials.name)
+                } else {
+                    null
+                }
+            }
+        }
+    }
     install(ContentNegotiation) {
         jackson {
             disable(SerializationFeature.INDENT_OUTPUT)
@@ -40,15 +53,21 @@ fun Application.configureRouting() {
     routing {
         route("api") {
             route("meta") {
-                post {
-                    call.respond(SuccessResponse(MapService.createMap(call.receive<NewMap>())))
-                }
-                get { call.respond(MapService.getMaps()) }
                 get("{mapId}") { call.respond(MapService.getMap(call.parameters["mapId"]!!.uppercase())) }
-                put("{mapId}") {
-                    val meta = call.receive<MapMeta>()
-                    val mapId = call.parameters["mapId"]
-                    call.respond(ApiResponse(MapService.updateMap(mapId!!.uppercase(), meta)))
+                authenticate  {
+                    post {
+                        call.respond(SuccessResponse(MapService.createMap(call.receive<NewMap>())))
+                    }
+                    get {
+                        val email = call.principal<UserIdPrincipal>()?.name
+                        val userId = UserService.getUserByEmail(email!!)!!.id
+                        call.respond(MapService.getMapsByUser(userId))
+                    }
+                    put("{mapId}") {
+                        val meta = call.receive<MapMeta>()
+                        val mapId = call.parameters["mapId"]
+                        call.respond(ApiResponse(MapService.updateMap(mapId!!.uppercase(), meta)))
+                    }
                 }
             }
             route("map/{mapId}") {
@@ -66,20 +85,18 @@ fun Application.configureRouting() {
                 get("geojson") { TODO() }
             }
             route("user") {
-                post { call.respond(UserService.createUser(call.receive<NewUser>())!!) }
-                get { call.respond(UserService.getUsers()) }
-                get("{id}") {
-                    call.respond(UserService.getUser(call.parameters["id"]!!.toLong()))
-                }
-                put("{id}") {
-                    call.respond(
-                        ApiResponse(
-                            UserService.updateUser(
-                                call.parameters["id"]!!.toLong(),
-                                call.receive<User>()
+                authenticate {
+                    post { call.respond(UserService.createUser(call.receive<NewUser>())!!) }
+                    put("{id}") {
+                        call.respond(
+                            ApiResponse(
+                                UserService.updateUser(
+                                    call.parameters["id"]!!.toLong(),
+                                    call.receive<User>()
+                                )
                             )
                         )
-                    )
+                    }
                 }
             }
         }
