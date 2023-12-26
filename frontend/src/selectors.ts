@@ -2,9 +2,10 @@ import {createSelector} from '@reduxjs/toolkit'
 import {IStore} from './store'
 import {allPass, equals, head, toPairs} from 'ramda'
 import dayjs from 'dayjs'
-import {Directive, IFeature} from './model'
+import {Directive, IFeature} from './model/model'
 import {DATE_FORMAT} from './const'
 import {splitTags} from './util'
+import {getTheme, Theme} from "./components/Themes";
 
 export const metadataSelector = createSelector(
 	(state: IStore) => state,

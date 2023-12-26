@@ -1,8 +1,10 @@
 import {MultiSelect} from '@mantine/core'
 import {defaultTo, equals} from 'ramda'
 import React, {useMemo, useState} from 'react'
-import {filterChangeOptions, filterField} from '../../filterModel'
-import {ValuesWithHeader} from '../../types'
+import {filterChangeOptions, filterField} from '../../model/filterModel'
+import {ValuesWithHeader} from '../../model/types'
+import {themeSelector} from "../../selectors";
+import {useSelector} from "react-redux";
 
 interface IProps {
     initField: filterField<string[]>,

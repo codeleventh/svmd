@@ -1,15 +1,15 @@
 import '../css/map/legend.css'
 
 import React, {useEffect, useMemo, useState} from 'react'
-import {Group, Select} from '@mantine/core'
+import {Group, Select, Text} from '@mantine/core'
 import {useDispatch, useSelector} from 'react-redux'
-import {featuresSelector, headersByDirectiveSelector} from '../selectors'
+import {featuresSelector, headersByDirectiveSelector, themeSelector} from '../selectors'
 import {headerToUniqueProps, normalizeValues, notEmpty} from '../util'
 import {fromPairs, head, keys, last, pipe} from 'ramda'
 import {Actions} from '../actions'
-import {LEGEND_COLORS, TRANSITION_DURATION} from '../const'
-import {Directive} from '../model'
-import {ValuesWithHeader} from '../types'
+import {TRANSITION_DURATION} from '../const'
+import {Directive} from '../model/model'
+import {ValuesWithHeader} from '../model/types'
 
 export const Legend: React.FC = () => {
 	const dispatch = useDispatch()

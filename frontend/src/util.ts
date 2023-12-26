@@ -1,7 +1,7 @@
 import {defaultTo, filter, isEmpty, isNil, map, max, min, Ord, pair, path, pipe, split, trim, uniq} from 'ramda'
 import {TAG_SEPARATOR} from './const'
-import {IFeature} from './model'
-import {ValuesWithHeader} from './types'
+import {IFeature} from './model/model'
+import {ValuesWithHeader} from './model/types'
 
 export const notEmpty = (x: unknown) => !isNil(x) && !isEmpty(x)
 

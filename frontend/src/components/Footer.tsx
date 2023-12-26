@@ -1,18 +1,18 @@
-import '../css/footer.css'
+import '../css/map/footer.css'
 
-import {Divider, SimpleGrid, useMantineTheme} from '@mantine/core'
+import {Divider, MantineProvider, SimpleGrid} from '@mantine/core'
 import {Attribution} from './Attribution'
 import React, {useCallback} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
-import {featuresSelector, headersByDirectiveSelector} from '../selectors'
+import {featuresSelector, headersByDirectiveSelector, themeSelector} from '../selectors'
 import {headerToUniqueProps, notEmpty} from '../util'
-import {filterChangeOptions} from '../filterModel'
+import {filterChangeOptions} from '../model/filterModel'
 import {Actions} from '../actions'
 import {SvmdSlider} from './filters/SvmdSlider'
 import {IStore} from '../store'
 import {Legend} from './Legend'
 import {isEmpty} from 'ramda'
-import {Directive} from '../model'
+import {Directive} from '../model/model'
 
 export const Footer: React.FC = () => {
 	const dispatch = useDispatch()

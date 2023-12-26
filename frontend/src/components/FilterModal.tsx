@@ -1,12 +1,12 @@
-import {featuresSelector, headersByDirectiveSelector} from '../selectors'
+import {featuresSelector, headersByDirectiveSelector, themeSelector} from '../selectors'
 import {useDispatch, useSelector} from 'react-redux'
 import React, {useCallback, useState} from 'react'
 import {Button, Modal, SimpleGrid, Space} from '@mantine/core'
 import {Actions} from '../actions'
 import {SvmdSelect} from './filters/SvmdSelect'
-import {filterChangeOptions, IFilter} from '../filterModel'
+import {filterChangeOptions, IFilter} from '../model/filterModel'
 import {SvmdRange} from './filters/SvmdRange'
-import {Directive} from '../model'
+import {Directive} from '../model/model'
 import {headerToUniqueProps} from '../util'
 
 interface IProps {

@@ -1,12 +1,12 @@
 import {RangeSlider, Space, Text} from '@mantine/core'
 import {defaultTo, equals, find, head, last} from 'ramda'
 import React, {useMemo, useState} from 'react'
-import {filterChangeOptions, filterField} from '../../filterModel'
+import {filterChangeOptions, filterField} from '../../model/filterModel'
 import {parseAsDateMarks, parseAsNumberMarks} from '../filterUtils'
 
 import dayjs from 'dayjs'
 import {DATE_FORMAT, SECONDS_IN_DAY} from '../../const'
-import {ValuesWithHeader} from '../../types'
+import {ValuesWithHeader} from '../../model/types'
 import {notEmpty} from '../../util'
 
 interface IProps {

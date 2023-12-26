@@ -1,7 +1,7 @@
 import {createAction} from '@reduxjs/toolkit'
-import {IFilter} from './filterModel'
-import {LegendColors} from './types'
-import {Directive, IFeatureIndexed, IMapMeta} from './model'
+import {IFilter} from './model/filterModel'
+import {LegendColors} from './model/types'
+import {Directive, IFeatureIndexed, IMapMeta} from './model/model'
 
 const setMeta = createAction<IMapMeta>('META/SET')
 const setDirectives = createAction<Map<Directive, string[]>>('DIRECTIVES/SET')

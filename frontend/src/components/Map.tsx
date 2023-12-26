@@ -2,30 +2,32 @@ import {useSelector} from 'react-redux'
 import {CircleMarker, MapContainer, Polygon, TileLayer} from 'react-leaflet'
 import React, {useEffect, useMemo, useRef} from 'react'
 import {
-	featuresSelector,
-	filteredFeaturesSelector,
-	filtersSelector,
-	headerByDirectiveSelector,
-	headersByDirectiveSelector,
-	legendColorsSelector,
-	legendHeaderSelector,
-	metadataSelector,
-	modalSelector
+    featuresSelector,
+    filteredFeaturesSelector,
+    filtersSelector,
+    headerByDirectiveSelector,
+    headersByDirectiveSelector,
+    legendColorsSelector,
+    legendHeaderSelector,
+    metadataSelector,
+    modalSelector,
+    themeSelector,
+    tileProviderSelector
 } from '../selectors'
 import {
-	CircleMarker as LeafletCircleMarker,
-	LatLngExpression,
-	Map as LeafletMap,
-	Polygon as LeafletPolygon
+    CircleMarker as LeafletCircleMarker,
+    LatLngExpression,
+    Map as LeafletMap,
+    Polygon as LeafletPolygon
 } from 'leaflet'
 import {Card} from './Card'
 import {Meerkat} from './Meerkat'
 import {equals} from 'ramda'
 import {FilterModal} from './FilterModal'
-import {Header} from './Header'
-import {useMantineTheme} from '@mantine/core'
+import {MapHeader} from './MapHeader'
+import {MantineProvider} from '@mantine/core'
 import {DEFAULT_PADDING, MARKER_RADIUS, MARKER_STYLE} from '../const'
-import {Directive, IFeatureIndexed, TileProvider} from '../model'
+import {Directive, IFeatureIndexed} from '../model/model'
 import {calculateBounds, calculateColor} from './mapUtils'
 
 import '../css/map/leaflet.css'

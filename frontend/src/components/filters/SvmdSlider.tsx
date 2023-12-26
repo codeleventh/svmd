@@ -1,13 +1,13 @@
 import {Group, Slider, Space, Text} from '@mantine/core'
 import {defaultTo, equals, find, head, last} from 'ramda'
 import React, {useMemo} from 'react'
-import {filterChangeOptions, filterField} from '../../filterModel'
+import {filterChangeOptions, filterField} from '../../model/filterModel'
 import {parseAsDateMarks, parseAsNumberMarks} from '../filterUtils'
 
 import dayjs from 'dayjs'
 import {DATE_FORMAT, SECONDS_IN_DAY} from '../../const'
 import {notEmpty} from '../../util'
-import {ValuesWithHeader} from '../../types'
+import {ValuesWithHeader} from '../../model/types'
 
 interface IProps {
     initField: filterField<number>,

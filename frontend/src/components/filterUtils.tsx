@@ -1,6 +1,6 @@
 import {head, isEmpty, last} from 'ramda'
 import dayjs from 'dayjs'
-import {Mark} from '../types'
+import {Mark} from '../model/types'
 import {DATE_FORMAT, SECONDS_IN_DAY} from '../const'
 import {notNaN} from '../util'
 

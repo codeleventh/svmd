@@ -1,9 +1,8 @@
 import {defaultTo, equals, head, last, unnest} from 'ramda'
 import {LatLngBounds} from 'leaflet'
-import {LEGEND_COLORS} from '../const'
 import {getArrayBoundaries, notEmpty} from '../util'
-import {IFeature, IFeatureIndexed} from '../model'
-import {Geometry, LegendColors} from '../types'
+import {IFeature, IFeatureIndexed} from '../model/model'
+import {Geometry, LegendColors} from '../model/types'
 
 export const calculateBounds = (features: IFeature[]) => {
 	// getting most SW and NE geo points
