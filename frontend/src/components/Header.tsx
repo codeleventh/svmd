@@ -7,7 +7,7 @@ import {filteredFeaturesSelector, filtersSelector, headersByDirectiveSelector, m
 import {headerToUniqueProps, notEmpty} from '../util'
 import {gte, head, values} from 'ramda'
 import {TRANSITION_DURATION} from '../const'
-import {Directive} from '../model'
+import {Directive} from '../model/model'
 
 export const Header: React.FC = () => {
 	const dispatch = useDispatch()

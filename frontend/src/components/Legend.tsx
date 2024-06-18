@@ -14,6 +14,7 @@ import {ValuesWithHeader} from '../model/types'
 export const Legend: React.FC = () => {
 	const dispatch = useDispatch()
 
+	const theme = useSelector(themeSelector)
 	const features = useSelector(featuresSelector)
 	const legendHeaders = useSelector(
 		headersByDirectiveSelector(Directive.FOOTER_LEGEND)
@@ -38,12 +39,13 @@ export const Legend: React.FC = () => {
 		dispatch(Actions.setLegendHeader(selectedHeader))
 	}, [features, selectedHeader])
 
+	const legendColors = theme.legendColors
 	return (
-		<Group style={{gap: '12px 16px'}}>
+		<Group style={{gap: '12px 20px'}}>
 			{headers.length > 1 && (
 				<Select
 					id="legendSelect"
-					size="sm"
+					size="xs"
 					data={headers}
 					onChange={(value) => {
 						setSelectedHeader(value!)
@@ -60,14 +62,12 @@ export const Legend: React.FC = () => {
 			)}
 
 			{propsByHeader[selectedHeader].map((label, i) => (
-				<Group key={i} className="legendEntity" spacing={6}>
+				<Group key={i} className="legendEntity" spacing={4}>
 					<div
 						className="legendBox"
-						style={{background: LEGEND_COLORS[i % LEGEND_COLORS.length]}}
+						style={{background: legendColors[i % legendColors.length]}}
 					/>
-					<div className="legendText" color={'dimmed'}>
-						{label}
-					</div>
+					<Text className="legendText" size='sm'>{label}</Text>
 				</Group>
 			))}
 		</Group>

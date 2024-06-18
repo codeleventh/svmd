@@ -1,5 +1,5 @@
 import {createReducer} from '@reduxjs/toolkit'
-import {INIT_FILTERS} from './model/filterModel'
+import {INIT_FILTERS} from './model/filter'
 import {Actions} from './actions'
 import {always} from 'ramda'
 

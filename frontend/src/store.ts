@@ -1,8 +1,8 @@
 import {combineReducers, configureStore} from '@reduxjs/toolkit'
 import {Reducers} from './reducers'
-import {IFilter} from './model/filterModel'
 import {LegendColors} from './model/types'
 import {IFeatureIndexed, IMapMeta} from './model/model'
+import {IFilter} from "./model/filter";
 
 export interface IStore {
 	metadata: IMapMeta;

@@ -3,48 +3,34 @@ html, body, #root {
     height: 100%;
 }
 
-#root {
-    display: table;
-}
-
-#map-wrapper, .error-wrapper {
+#map-wrapper, #error-wrapper {
     display: table-row;
     width: 100%;
     height: 100%;
 }
 
-.leaflet-control-attribution {
-    display: none; /* Leaflet attribution will be displayed in a different way */
-}
-
-#header {
+#map-header {
     padding: 12px 8px;
 }
 
-.leaflet-container {
-    height: 100%;
-    padding: 16px 24px;
+#root {
+    display: table;
+    background: var(--themed-background) !important;
+    color: var(--themed-foreground);
 }
 
-/* fix for visible grid on retina */
-.leaflet-pane.leaflet-tile-pane img {
-    width: 256.5px !important;
-    height: 256.5px !important;
+/*// TODO: это тоже уноси, нехуй этому здесь делать*/
+body {
+    border-color: var(--themed-background) !important;
+    background-color: var(--themed-background) !important;
 }
 
-.leaflet-pane.leaflet-tile-pane {
-    filter: brightness(130%);
+a, a:visited {
+    color: var(--themed-link) !important;
 }
 
-/* overriding the map panes z-indexes */
-
-.leaflet-pane.leaflet-popup-pane {
-    z-index: 180 !important;
-}
-
-.leaflet-override {
-    position: relative;
-    z-index: 100;
+body {
+    background-color: var(--themed-background) !important;
 }
 
 .leaflet-pane.leaflet-tile-pane {

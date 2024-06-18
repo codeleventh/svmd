@@ -1,5 +1,5 @@
 import {createAction} from '@reduxjs/toolkit'
-import {IFilter} from './model/filterModel'
+import {IFilter} from './model/filter'
 import {LegendColors} from './model/types'
 import {Directive, IFeatureIndexed, IMapMeta} from './model/model'
 

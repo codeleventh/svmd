@@ -1,7 +1,7 @@
 import {MultiSelect} from '@mantine/core'
 import {defaultTo, equals} from 'ramda'
 import React, {useMemo, useState} from 'react'
-import {filterChangeOptions, filterField} from '../../model/filterModel'
+import {filterChangeOptions, filterField} from '../../model/filter'
 import {ValuesWithHeader} from '../../model/types'
 import {themeSelector} from "../../selectors";
 import {useSelector} from "react-redux";
@@ -15,6 +15,7 @@ interface IProps {
 export const SvmdSelect: React.FC<IProps> = (props: IProps) => {
     const {valuesWithHeader, initField, onChange} = props
     const [header, values] = valuesWithHeader
+    const theme = useSelector(themeSelector)
 
     const defaultValue: string[] = []
     const [selected, setSelected] = useState(defaultTo(defaultValue, initField?.value))

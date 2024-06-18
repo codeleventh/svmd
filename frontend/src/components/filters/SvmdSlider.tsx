@@ -1,7 +1,7 @@
 import {Group, Slider, Space, Text} from '@mantine/core'
 import {defaultTo, equals, find, head, last} from 'ramda'
 import React, {useMemo} from 'react'
-import {filterChangeOptions, filterField} from '../../model/filterModel'
+import {filterChangeOptions, filterField} from '../../model/filter'
 import {parseAsDateMarks, parseAsNumberMarks} from '../filterUtils'
 
 import dayjs from 'dayjs'
@@ -34,9 +34,9 @@ export const SvmdSlider: React.FC<IProps> = (props: IProps) => {
 
     return useMemo(() => (sortedData.length <= 1) ? <></> : <>
         <Group>
-            <Text size="md">{header}: </Text>
+            <Text size="sm">{header}: </Text>
             <Slider
-                size="lg"
+                size="sm"
                 min={min}
                 max={max}
                 step={delta}

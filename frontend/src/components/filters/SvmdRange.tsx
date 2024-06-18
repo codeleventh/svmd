@@ -1,7 +1,7 @@
 import {RangeSlider, Space, Text} from '@mantine/core'
 import {defaultTo, equals, find, head, last} from 'ramda'
 import React, {useMemo, useState} from 'react'
-import {filterChangeOptions, filterField} from '../../model/filterModel'
+import {filterChangeOptions, filterField} from '../../model/filter'
 import {parseAsDateMarks, parseAsNumberMarks} from '../filterUtils'
 
 import dayjs from 'dayjs'

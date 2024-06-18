@@ -1,4 +1,4 @@
-import {Directive, IFeatureCollection, IMapMeta} from '../model'
+import {Directive, IFeatureCollection, IMapMeta} from "../model/model";
 
 export type IApiResponse = IMapSuccessResponse | IFailResponse;
 

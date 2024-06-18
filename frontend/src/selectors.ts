@@ -11,6 +11,11 @@ export const metadataSelector = createSelector(
 	(state: IStore) => state,
 	(state) => state.metadata
 )
+
+export const themeSelector = createSelector(metadataSelector, (metadata) => getTheme(metadata.theme ?? Theme.DEFAULT))
+
+export const tileProviderSelector = createSelector(metadataSelector, themeSelector, (metadata, theme) => metadata.tileProvider ?? theme.defaultTileProvider)
+
 export const directivesSelector = createSelector(
 	(state: IStore) => state,
 	(state) => state.directives

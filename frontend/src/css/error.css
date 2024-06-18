@@ -1,16 +1,16 @@
-.error-wrapper, .error-wrapper > div {
+#error-wrapper, #error-wrapper > div {
     height: 100%;
     margin: auto;
 }
 
-.error-wrapper > div > div {
+#error-wrapper > div > div {
     min-width: 420px;
     max-width: 60%;
 }
 
-.error-wrapper .error-stack {
+#error-wrapper .error-stack {
     border-radius: 4px;
     padding: 16px;
     font-family: Fira Mono, JetBrains Mono, Monaco, Courier, monospace;
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.075);
 }

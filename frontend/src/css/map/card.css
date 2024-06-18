@@ -12,8 +12,7 @@
     width: 380px;
     height: 255px;
     border-radius: 4px;
-    /*background-color: #d0d0d0; !*image placeholder for light theme*!*/
-    background-color: #222222; /* image placeholder for dark theme */
+    background-color: rgba(0, 0, 0, 0.2);
     background-position: center;
     background-repeat: no-repeat;
 }
@@ -22,16 +21,6 @@
 .cardPhoto, .cardSlides .splide__slide {
     border-radius: 4px;
     background-size: contain !important;
-}
-
-.splide__pagination__page.is-active {
-    /*background-color: #999 !important; !*light theme*!*/
-    background-color: #fff !important;
-}
-
-.splide__pagination__page:not(.is-active) {
-    /*background-color: #555 !important; !*light theme*!*/
-    background-color: #aaa !important;
 }
 
 /* overriding Leaflet styles */
@@ -54,28 +43,53 @@
     opacity: 1 !important;
     padding: 2px 6px 6px 6px;
     border: none;
-    background: #2c2e33;
-    color: rgb(193, 194, 197);
+    /*background: #2c2e33;*/
+    /*color: rgb(193, 194, 197);*/
 }
 
 .leaflet-tooltip-left::before {
-    border-left-color: #2c2e33 !important;
+    /*border-left-color: #2c2e33 !important;*/
 }
 
 .leaflet-tooltip-top::before {
-    border-top-color: #2c2e33 !important;
+    /*border-top-color: #2c2e33 !important;*/
 }
 
 .leaflet-tooltip-right::before {
-    border-right-color: #2c2e33 !important;
+    /*border-right-color: #2c2e33 !important;*/
 }
 
 .leaflet-tooltip-bottom::before {
-    border-bottom-color: #2c2e33 !important;
+    /*border-bottom-color: #2c2e33 !important;*/
 }
 
 .leaflet-popup-content {
     width: 380px !important;
 }
 
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+    background: var(--themed-background) !important;
+    color: var(--themed-foreground) !important;
+}
 
+.leaflet-tooltip {
+    background: var(--themed-background) !important;
+    color: var(--themed-foreground) !important;
+}
+
+.leaflet-tooltip-top:before {
+    border-top-color: var(--themed-background) !important;
+}
+
+.leaflet-tooltip-left:before {
+    border-left-color: var(--themed-background) !important;
+}
+
+.leaflet-tooltip-bottom:before {
+    border-bottom-color: var(--themed-background) !important;
+}
+
+.leaflet-tooltip-right:before {
+    border-right-color: var(--themed-background) !important;
+}
