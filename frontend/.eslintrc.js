@@ -38,10 +38,6 @@ module.exports = {
 			'warn',
 			'tab'
 		],
-		'linebreak-style': [
-			'warn',
-			'unix'
-		],
 		'quotes': [
 			'warn',
 			'single'

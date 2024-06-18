@@ -2,7 +2,7 @@ import './css/style.css'
 
 import store from './store'
 import React from 'react'
-import {BrowserRouter as Router, Route, Switch} from 'react-router-dom'
+import {BrowserRouter as Router, Redirect, Route, Switch} from 'react-router-dom'
 import {Provider} from 'react-redux'
 import {ErrorTemplate} from './components/ErrorTemplate'
 import {CreatePage} from './components/pages/CreatePage'
@@ -64,6 +64,9 @@ export const App: React.FC = () => {
                             </Route>
                             <Route exact path="/login">
                                 <Page childComponent={<LoginPage/>}/>
+                            </Route>
+                            <Route exact path="/logout">
+                                <Redirect to="/"/>
                             </Route>
                             <Route exact path="/about">
                                 <Page childComponent={<AboutPage/>}/>

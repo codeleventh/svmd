@@ -33,26 +33,19 @@ body {
     background-color: var(--themed-background) !important;
 }
 
-.leaflet-pane.leaflet-tile-pane {
-    z-index: 2;
+#menu {
+    padding: 0 16pt;
 }
 
-.leaflet-pane.leaflet-map-pane {
-    z-index: 4;
+#menu .profile {
+    white-space: nowrap;
 }
 
-.leaflet-pane.leaflet-shadow-pane {
-    z-index: 5;
+#menu .icon {
+    stroke-width: 1.5;
 }
 
-.leaflet-pane.leaflet-overlay-pane {
-    z-index: 5;
-}
-
-.leaflet-pane.leaflet-marker-pane {
-    z-index: 6;
-}
-
-.leaflet-pane.leaflet-tooltip-pane {
-    z-index: 7;
+/* for tabler icons */
+.icon {
+    vertical-align: middle;
 }

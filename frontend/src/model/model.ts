@@ -46,12 +46,8 @@ export type IMapMeta = INewMapMeta & {
     createdAt: string;
 };
 
-export type INewUser = {
+export type IUser = {
     email: string
-}
-
-export type IUser = INewUser & {
-    id: number
 }
 
 export type IFeature = {
