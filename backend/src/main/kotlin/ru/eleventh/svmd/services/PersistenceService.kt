@@ -39,7 +39,7 @@ class PersistenceService {
         )
     }
 
-    fun createMap(newIdentifier: String, newMap: NewMap): String {
+    fun createMap(userId: Long, newIdentifier: String, newMap: NewMap): String {
         val insertStatement = dbQuery {
             MapsTable.insert {
                 it[identifier] = newIdentifier
@@ -47,6 +47,7 @@ class PersistenceService {
                 it[createdAt] = Instant.now()
                 it[accessed] = 0
                 it[svmdVersion] = Config.version
+                it[owner] = userId
             }
         }
         return insertStatement.resultedValues?.single()!!.let(this::toMap).identifier

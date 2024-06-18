@@ -8,6 +8,10 @@ import ru.eleventh.svmd.model.db.User
 object UserService {
      fun createUser(newUser: NewUser): Long? = dao.createUser(newUser)
 
+    fun getUserById(id: Long): User? {
+        return dao.getUser(id)
+    }
+
      fun getUserByEmail(email: String): User? {
         return dao.getUserByEmail(email)
     }

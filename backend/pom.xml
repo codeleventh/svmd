@@ -68,6 +68,11 @@
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
+            <artifactId>ktor-server-sessions-jvm</artifactId>
+            <version>${ktor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.ktor</groupId>
             <artifactId>ktor-server-tests-jvm</artifactId>
             <version>${ktor.version}</version>
             <scope>test</scope>

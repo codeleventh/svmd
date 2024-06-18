@@ -33,10 +33,10 @@ object MapService {
 
     private fun isSpreadsheetValid(id: String): Boolean = id.matches(Regex("2PACX-[-_a-zA-Z0-9]{80}"))
 
-    fun createMap(newMap: NewMap): String {
+    fun createMap(userId: Long, newMap: NewMap): String {
         if (!isSpreadsheetValid(newMap.spreadsheetId))
             throw SvmdException(ApiErrors.BAD_SPREADSHEET_ID)
-        return dao.createMap(newIdentifier(), newMap)
+        return dao.createMap(userId, newIdentifier(), newMap)
     }
 
     fun getMapsByUser(userId: Long): List<MapMeta> {
@@ -55,10 +55,10 @@ object MapService {
         else throw SvmdException(ApiErrors.NOT_FOUND)
     }
 
-    fun updateMap(identifier: String, map: MapMeta): Boolean {
+    fun updateMap(identifier: String, map: MapMeta) {
         if (identifier != map.identifier)
             throw SvmdException(ApiErrors.IDS_DONT_MATCH)
-        return dao.updateMap(map) == 1
+        if (dao.updateMap(map) != 1) throw SvmdException(ApiErrors.CANNOT_UPDATE)
     }
 
     suspend fun convertMap(identifier: String): ApiResponse {

@@ -4,3 +4,5 @@ svmd.db.host=localhost
 svmd.db.name=svmd
 svmd.db.username=admin
 svmd.db.password=admin
+svmd.session.encryptionkey=b01e12c96cbc6af0f7aee9af5be475a8
+svmd.session.signkey=2c4bb1f47e8e050ab44726de8087bb47

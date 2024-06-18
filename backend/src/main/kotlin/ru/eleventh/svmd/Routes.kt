@@ -11,7 +11,10 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.sessions.*
+import io.ktor.util.*
 import ru.eleventh.svmd.exceptions.SvmdException
+import ru.eleventh.svmd.model.ApiErrors
 import ru.eleventh.svmd.model.db.MapMeta
 import ru.eleventh.svmd.model.db.NewMap
 import ru.eleventh.svmd.model.db.NewUser
@@ -23,16 +26,29 @@ import ru.eleventh.svmd.model.responses.SuccessResponse
 import ru.eleventh.svmd.services.MapService
 import ru.eleventh.svmd.services.UserService
 
+data class UserSession(val userId: Long) : Principal
+
+const val AUTH_NAME = "auth-session"
+
 fun Application.configureRouting() {
+    install(Sessions) {
+        cookie<UserSession>("session", storage = SessionStorageMemory()) {
+            cookie.path = "/"
+            cookie.httpOnly = false
+            cookie.maxAgeInSeconds = 43200 // 1 month
+            transform(
+                SessionTransportTransformerEncrypt(
+                    hex(Config.encryptionKey),
+                    hex(Config.signKey)
+                )
+            )
+        }
+    }
     install(Authentication) {
-        basic {
-            validate { credentials ->
-                val user = UserService.getUserByEmail(credentials.name)
-                if (user?.password == credentials.password) {
-                    UserIdPrincipal(credentials.name)
-                } else {
-                    null
-                }
+        session<UserSession>(AUTH_NAME) {
+            validate { session -> session }
+            challenge {
+                call.respond(HttpStatusCode.Unauthorized, FailResponse(ApiErrors.UNAUTHORIZED))
             }
         }
     }
@@ -45,6 +61,8 @@ fun Application.configureRouting() {
     }
     install(createApplicationPlugin("exception handler") {
         on(CallFailed) { call, cause ->
+            System.err.println("Error: $cause")
+            cause.printStackTrace()
             if (cause is SvmdException)
                 call.respond(cause.toResponse())
             else call.respond(FailResponse(cause.message.orEmpty()))
@@ -52,21 +70,37 @@ fun Application.configureRouting() {
     })
     routing {
         route("api") {
+            post("login") {
+                val email = call.parameters["email"]!!
+                val password = call.parameters["password"]!!
+                val user = UserService.getUserByEmail(email)
+
+                if (user?.password == password) {
+                    call.sessions.set(UserSession(user.id))
+                    call.respond(SuccessResponse("Logged successfully"))
+                } else {
+                    call.respond(FailResponse(ApiErrors.BAD_CREDS))
+                }
+            }
+            post("/logout") {
+                call.sessions.clear<UserSession>()
+                call.respond(SuccessResponse("Logged out"))
+            }
             route("meta") {
                 get("{mapId}") { call.respond(MapService.getMap(call.parameters["mapId"]!!.uppercase())) }
-                authenticate  {
+                authenticate(AUTH_NAME) {
                     post {
-                        call.respond(SuccessResponse(MapService.createMap(call.receive<NewMap>())))
+                        val userId = call.sessions.get<UserSession>()!!.userId
+                        call.respond(SuccessResponse(MapService.createMap(userId, call.receive<NewMap>())))
                     }
                     get {
-                        val email = call.principal<UserIdPrincipal>()?.name
-                        val userId = UserService.getUserByEmail(email!!)!!.id
-                        call.respond(MapService.getMapsByUser(userId))
+                        val userId = call.sessions.get<UserSession>()!!.userId
+                        call.respond(SuccessResponse(MapService.getMapsByUser(userId)))
                     }
                     put("{mapId}") {
                         val meta = call.receive<MapMeta>()
                         val mapId = call.parameters["mapId"]
-                        call.respond(ApiResponse(MapService.updateMap(mapId!!.uppercase(), meta)))
+                        call.respond(SuccessResponse(MapService.updateMap(mapId!!.uppercase(), meta)))
                     }
                 }
             }
@@ -85,17 +119,31 @@ fun Application.configureRouting() {
                 get("geojson") { TODO() }
             }
             route("user") {
-                authenticate {
-                    post { call.respond(UserService.createUser(call.receive<NewUser>())!!) }
+                post { call.respond(UserService.createUser(call.receive<NewUser>())!!) }
+                authenticate(AUTH_NAME) {
+                    get("me") {
+                        val userId = call.sessions.get<UserSession>()!!.userId
+                        val email = UserService.getUserById(userId)?.email
+                        if (email != null) {
+                            call.respond(HttpStatusCode.OK, SuccessResponse(email))
+                        } else {
+                            call.respond(HttpStatusCode.Unauthorized, FailResponse(ApiErrors.UNAUTHORIZED))
+                        }
+                    }
                     put("{id}") {
-                        call.respond(
-                            ApiResponse(
-                                UserService.updateUser(
-                                    call.parameters["id"]!!.toLong(),
-                                    call.receive<User>()
+                        val userId = call.sessions.get<UserSession>()!!.userId
+                        if (userId != call.parameters["id"]!!.toLong()) {
+                            call.respond(HttpStatusCode.Unauthorized, FailResponse(ApiErrors.UNAUTHORIZED))
+                        } else {
+                            call.respond(
+                                ApiResponse(
+                                    UserService.updateUser(
+                                        call.parameters["id"]!!.toLong(),
+                                        call.receive<User>()
+                                    )
                                 )
                             )
-                        )
+                        }
                     }
                 }
             }

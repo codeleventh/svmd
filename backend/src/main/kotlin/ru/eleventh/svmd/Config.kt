@@ -11,5 +11,7 @@ object Config {
     val databaseName = config.getString("svmd.db.name")
     val databaseUsername = config.getString("svmd.db.username")
     val databasePassword = config.getString("svmd.db.password")
+    val encryptionKey = config.getString("svmd.session.encryptionkey")
+    val signKey = config.getString("svmd.session.signkey")
     val version = "?"
 }

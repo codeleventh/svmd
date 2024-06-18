@@ -5,7 +5,6 @@ import ru.eleventh.svmd.Config
 
 object Errors {
     val UNEXPECTED_ERROR = { err: Throwable -> "Неожиданная ошибка: ${err.message}" }
-    const val WHAT_THE_FUCK = "Неожиданная ошибка"
 }
 
 object ApiErrors {
@@ -13,12 +12,15 @@ object ApiErrors {
     const val NOT_FOUND = "Не найдено"
     const val NO_MAP_EXIST = "Не существует карты с таким идентификатором"
     const val BAD_SPREADSHEET_ID = "Указана некорректная ссылка на таблицу"
+    const val CANNOT_UPDATE = "Обновление не удалось"
+    const val BAD_CREDS = "Указан неверный e-mail или пароль"
+    const val UNAUTHORIZED = "Пользователь не авторизован"
 }
 
 object TransformErrors {
     val WARN_WRONG_COORDINATES = { index: Int ->
         "Строка №${index + 2}: координаты отсутствуют или заданы некорректно (объект будет пропущен)"
-        // ↑ +1 for natural indexing, +1 for header line that we're not iterating
+        // ↑ +1 for natural indexing, +1 for csv header line that we're not iterating
     }
 
     const val NO_TABLE_EXIST = "Не существует таблицы для карты с таким идентификатором"
