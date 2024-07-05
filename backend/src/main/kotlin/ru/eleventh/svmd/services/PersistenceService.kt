@@ -20,6 +20,7 @@ class PersistenceService {
     private fun toMap(row: ResultRow): MapMeta = MapMeta(
         identifier = row[MapsTable.identifier],
         center = row[MapsTable.center]?.let { mapper.readValue(it) },
+        bounds = row[MapsTable.bounds]?.let { mapper.readValue(it) },
         title = row[MapsTable.title],
         createdAt = row[MapsTable.createdAt],
         lang = Lang.values().find { it.name == row[MapsTable.lang] },
@@ -28,7 +29,7 @@ class PersistenceService {
         defaultColor = row[MapsTable.defaultColor],
         theme = Theme.values().find { it.name == row[MapsTable.theme] },
         owner = row[MapsTable.owner],
-        tileProvider = TileProvider.values().find { it.name == row[MapsTable.lang] },
+        tileProvider = TileProvider.values().find { it.name == row[MapsTable.tileProvider] },
     )
 
     private fun toUser(row: ResultRow): User {
@@ -83,6 +84,7 @@ class PersistenceService {
         MapsTable.update({ MapsTable.identifier eq map.identifier }) {
             it[title] = map.title
             it[center] = mapper.writeValueAsString(map.center)
+            it[bounds] = mapper.writeValueAsString(map.bounds)
             it[lang] = map.lang?.name
             it[logo] = map.logo
             it[link] = map.link
@@ -123,4 +125,3 @@ class PersistenceService {
         }
     }
 }
-

@@ -55,9 +55,14 @@ object MapService {
         else throw SvmdException(ApiErrors.NOT_FOUND)
     }
 
-    fun updateMap(identifier: String, map: MapMeta) {
+    fun updateMap(identifier: String, map: MapMeta, userId: Long) {
         if (identifier != map.identifier)
             throw SvmdException(ApiErrors.IDS_DONT_MATCH)
+
+        val existingMap = dao.getMap(map.identifier)
+        if (existingMap?.owner != userId)
+            throw SvmdException(ApiErrors.ACCESS_FORBIDDEN)
+
         if (dao.updateMap(map) != 1) throw SvmdException(ApiErrors.CANNOT_UPDATE)
     }
 

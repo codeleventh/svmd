@@ -87,7 +87,7 @@ fun Application.configureRouting() {
                 call.respond(SuccessResponse("Logged out"))
             }
             route("meta") {
-                get("{mapId}") { call.respond(MapService.getMap(call.parameters["mapId"]!!.uppercase())) }
+                get("{mapId}") { call.respond(SuccessResponse(MapService.getMap(call.parameters["mapId"]!!.uppercase()))) }
                 authenticate(AUTH_NAME) {
                     post {
                         val userId = call.sessions.get<UserSession>()!!.userId
@@ -100,14 +100,15 @@ fun Application.configureRouting() {
                     put("{mapId}") {
                         val meta = call.receive<MapMeta>()
                         val mapId = call.parameters["mapId"]
-                        call.respond(SuccessResponse(MapService.updateMap(mapId!!.uppercase(), meta)))
+                        val userId = call.sessions.get<UserSession>()!!.userId
+                        call.respond(SuccessResponse(MapService.updateMap(mapId!!.uppercase(), meta, userId)))
                     }
                 }
             }
             route("map/{mapId}") {
                 get {
-                    val mapId = call.parameters["mapId"]
-                    val transformedMap = MapService.convertMap(mapId!!)
+                    val mapId = call.parameters["mapId"]!!
+                    val transformedMap = MapService.convertMap(mapId)
                     if (transformedMap is MapResponse) {
                         call.response.header(
                             HttpHeaders.CacheControl,

@@ -15,6 +15,7 @@ object ApiErrors {
     const val CANNOT_UPDATE = "Обновление не удалось"
     const val BAD_CREDS = "Указан неверный e-mail или пароль"
     const val UNAUTHORIZED = "Пользователь не авторизован"
+    const val ACCESS_FORBIDDEN = "Доступ запрещен"
 }
 
 object TransformErrors {

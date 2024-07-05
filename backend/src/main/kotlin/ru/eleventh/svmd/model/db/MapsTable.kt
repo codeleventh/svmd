@@ -17,6 +17,7 @@ data class NewMap(
 data class MapMeta(
     val identifier: String, // example: W92S553T
     val title: String?,
+    val bounds: Pair<Position, Position>?,
     val center: Position?,
     val createdAt: Instant,
     val lang: Lang?,
@@ -31,6 +32,7 @@ data class MapMeta(
 object MapsTable : Table() {
     val identifier = text("identifier")
     val title = text("title").nullable()
+    val bounds = mediumText("bounds").nullable()
     val center = text("center").nullable()
     val createdAt = timestamp("created_at")
     val lang = text("lang").nullable()

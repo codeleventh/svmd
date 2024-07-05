@@ -7,11 +7,11 @@ object Config {
     private val config: Config = ConfigFactory.load()
     val maxObjects = config.getInt("svmd.maxobjects")
     val cacheLifetime = config.getLong("svmd.cache.lifetime")
-    val databaseHost = config.getString("svmd.db.host")
-    val databaseName = config.getString("svmd.db.name")
-    val databaseUsername = config.getString("svmd.db.username")
-    val databasePassword = config.getString("svmd.db.password")
-    val encryptionKey = config.getString("svmd.session.encryptionkey")
-    val signKey = config.getString("svmd.session.signkey")
-    val version = "?"
+    val databaseHost: String = config.getString("svmd.db.host")
+    val databaseName: String = config.getString("svmd.db.name")
+    val databaseUsername: String = config.getString("svmd.db.username")
+    val databasePassword: String = config.getString("svmd.db.password")
+    val encryptionKey: String = config.getString("svmd.session.encryptionkey")
+    val signKey: String = config.getString("svmd.session.signkey")
+    val version: String = "?"
 }
