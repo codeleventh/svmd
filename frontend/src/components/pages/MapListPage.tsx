@@ -28,7 +28,7 @@ export const MapListPage: React.FC = () => {
                 : !response.body.length
                     ? <Notification disallowClose icon={<InfoCircle floodColor='indigo'/>}>У вас ещё нет карт.
                         Попробуйте <Link to='/create'>создать</Link> свою первую карту.</Notification>
-                    : <><Table>
+                    : <Table>
                         <thead>
                         <tr>
                             <th>ID</th>
@@ -44,13 +44,11 @@ export const MapListPage: React.FC = () => {
                                 <td>{row.title ?? DEFAULT_FEATURE_NAME}</td>
                                 <td>{row.lang}</td>
                                 <td>{dayjs(row.createdAt).format(DATETIME_FORMAT)}</td>
-                                <td>
-                                    <td><Link to={`/${row.identifier}/edit`}><Edit/></Link></td>
-                                </td>
+                                <td><Link to={`/${row.identifier}/edit`}><Edit/></Link></td>
                             </tr>
                         )}
                         </tbody>
-                    </Table></>
+                    </Table>
         }
     </>)
 }

@@ -15,7 +15,6 @@ export const CreatePage: React.FC = () => {
     const extractSpreadsheetId = (url: string) => url.match(urlRegex)?.at(0) ?? ""
 
     const [response, setResponse] = useState<IApiResponse<string>>()
-
     const onSubmit = () => axios
         .post(`/api/meta`, {spreadsheetId: extractSpreadsheetId(url)})
         .then((response) => response.data)
@@ -32,8 +31,7 @@ export const CreatePage: React.FC = () => {
             value={url}
             error={!isEmpty(url) && !isValid(url) ? "Неправильная ссылка. Убедитесь, что таблица опубликована" : false}
             onChange={(e) => setUrl(e.target.value)}
-        >
-        </TextInput>
+        />
         <Accordion iconPosition="left" disableIconRotation>
             <Accordion.Item icon={<Help/>} label="Как опубликовать таблицу и получить ссылку?">
                 <Center>

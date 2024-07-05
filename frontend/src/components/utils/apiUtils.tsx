@@ -5,7 +5,7 @@ import {Notification} from "@mantine/core";
 import {AlertCircle, AlertTriangle, CircleCheck} from "tabler-icons-react";
 import React from "react";
 import {isLocalStorageAvailable} from "./userUtils";
-import {hasIn} from "ramda";
+import {defaultTo, hasIn} from "ramda";
 
 export const errorHandler: (e: AxiosError) => IFailResponse = (e) => {
     console.error(`${JSON.stringify(e)}`) // TODO: error messages only
@@ -32,15 +32,16 @@ export const errorHandler: (e: AxiosError) => IFailResponse = (e) => {
 }
 
 export function responseToNotification<T>(response: IApiResponse<T>) {
-    if (response.success) {
-        return <Notification disallowClose
-                             icon={<CircleCheck floodColor="teal"/>}>{response.body ?? 'OK'}</Notification>
-    } else {
-        return (!response.warnings ? []
-            : response.warnings.map(err => <Notification disallowClose icon={<AlertTriangle floodColor='gold'/>}
-            >{err}</Notification>))
-            .concat(!response.errors ? []
-                : response.errors.map(err => <Notification disallowClose icon={<AlertCircle floodColor='red'/>}
-                                                           color="red">{err}</Notification>))
-    }
+    return response.success
+        ? <Notification disallowClose icon={<CircleCheck/>} color="teal">
+            {typeof response?.body === 'string' ? response.body : 'OK'}
+        </Notification>
+        : (defaultTo([], response.warnings).map((warn, i) =>
+                <Notification disallowClose icon={<AlertTriangle/>} color='gold' key={`w${i}`}>{warn}</Notification>
+            )
+        ).concat(
+            defaultTo([], response.errors).map((err, i) =>
+                <Notification disallowClose icon={<AlertCircle/>} color="red" key={`e${i}`}>{err}</Notification>
+            )
+        )
 }

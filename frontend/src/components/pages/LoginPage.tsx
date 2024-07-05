@@ -41,12 +41,14 @@ export const LoginPage: React.FC = () => {
     }, [response])
 
     return <>
-        {!response ? <></> : responseToNotification(response)}
-        {isLocalStorageAvailable() ? <></> :
+        {!!response && responseToNotification(response)}
+        {
+            isLocalStorageAvailable() ||
             <Notification disallowClose icon={<AlertCircle floodColor='red'/>} color="red">
                 Для входа требуется включенное в настройках браузера локальное хранилище (local storage)
-            </Notification>}
-        <form onSubmit={form.onSubmit((values) => onSubmit(values))}>
+            </Notification>
+        }
+        {<form onSubmit={form.onSubmit((values) => onSubmit(values))}>
             <TextInput
                 label='E-mail'
                 disabled={noLocalStorage}
@@ -63,7 +65,7 @@ export const LoginPage: React.FC = () => {
             <Group position='left' mt='md'>
                 <Button type='submit' disabled={noLocalStorage}>Вход</Button>
             </Group>
-        </form>
+        </form>}
     </>
 }
 
