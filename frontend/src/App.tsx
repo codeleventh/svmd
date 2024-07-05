@@ -53,9 +53,12 @@ export const App: React.FC = () => {
                             <Route exact path="/create">
                                 <Page childComponent={<CreatePage/>}/>
                             </Route>
-                            <Route path={`/:mapId(${MAP_ID_REGEX})/edit`}>
-                                <Page childComponent={<EditPage/>}/>
-                            </Route>
+                            <Route
+                                path={`/:mapId(${MAP_ID_REGEX})/edit`}
+                                render={(props) =>
+                                    <Page childComponent={<EditPage {...props.match.params}/>}/>
+                                }
+                            />
                             <Route path={`/:mapId(${MAP_ID_REGEX})`}>
                                 <MapPage/>
                             </Route>

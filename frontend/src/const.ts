@@ -11,6 +11,7 @@ export const PROJECT_START_YEAR = 2022
 export const SVMD_VERSION = '0.1' // TODO: get from package.json
 
 export const DEFAULT_FEATURE_NAME = 'Без названия'
+export const DEFAULT_MAP_TITLE = 'Без названия'
 
 export const CARD_LINK_TEXT = 'Подробнее'
 

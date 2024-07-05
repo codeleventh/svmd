@@ -3,7 +3,6 @@ import {Geometry, Point} from './types'
 export enum Lang { RU, EN }
 
 export enum TileProvider {
-    DEFAULT = 'TODO:',
     OSM = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     NORD = 'TODO: 1',
     LIGHT = 'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
@@ -32,6 +31,7 @@ export enum Directive {
 
 export type INewMapMeta = {
     title: string;
+    bounds: [Point, Point],
     center?: Point;
     lang?: Lang;
     logo?: string;
@@ -42,6 +42,7 @@ export type INewMapMeta = {
 };
 
 export type IMapMeta = INewMapMeta & {
+    owner: number;
     identifier: string;
     createdAt: string;
 };
