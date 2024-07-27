@@ -52,12 +52,12 @@ export const Legend: React.FC = () => {
 						dispatch(Actions.setLegendHeader(value!))
 					}}
 					value={selectedHeader}
-					clearable={false}
 					searchable={false}
 					dropdownPosition="top"
-					allowDeselect={false}
 					transition="skew-down"
 					transitionDuration={TRANSITION_DURATION}
+					allowDeselect={false}
+					clearable={false}
 				/>
 			)}
 

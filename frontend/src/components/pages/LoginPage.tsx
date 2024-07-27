@@ -20,7 +20,7 @@ export const LoginPage: React.FC = () => {
         },
         schema: zodResolver(z.object({
             email: z.string().email('Введите корректный адрес почты'),
-            password: z.string().min(8, {message: 'Пароль должен быть не короче 8 символов'})
+            password: z.string().min(8, {message: 'Пароль не может быть короче 8 символов'})
         })),
     });
 

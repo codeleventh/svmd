@@ -11,7 +11,7 @@ import MapPage from './components/pages/MapPage'
 import {MAP_ID_REGEX} from './const'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {noop} from './util'
-import {getTheme, Theme} from "./components/Themes";
+import {DEFAULT_THEME, resolveTheme} from "./model/themes";
 import {EditPage} from "./components/pages/EditPage";
 import {MapListPage} from "./components/pages/MapListPage";
 import {Page} from "./components/pages/Page";
@@ -31,7 +31,7 @@ export const App: React.FC = () => {
         stackTrace={error.stack}
     />
 
-    const defaultTheme = getTheme(Theme.DEFAULT)
+    const defaultTheme = resolveTheme(DEFAULT_THEME)
     document.documentElement.style.setProperty('--themed-background', defaultTheme.background);
     document.documentElement.style.setProperty('--themed-foreground', defaultTheme.foreground);
     document.documentElement.style.setProperty('--themed-link', defaultTheme.link);

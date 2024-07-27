@@ -5,14 +5,14 @@ import dayjs from 'dayjs'
 import {Directive, IFeature} from './model/model'
 import {DATE_FORMAT} from './const'
 import {splitTags} from './util'
-import {getTheme, Theme} from "./components/Themes";
+import {DEFAULT_THEME, resolveTheme} from "./model/themes";
 
 export const metadataSelector = createSelector(
 	(state: IStore) => state,
 	(state) => state.metadata
 )
 
-export const themeSelector = createSelector(metadataSelector, (metadata) => getTheme(metadata.theme ?? Theme.DEFAULT))
+export const themeSelector = createSelector(metadataSelector, (metadata) => resolveTheme(metadata.theme ?? DEFAULT_THEME))
 
 export const tileProviderSelector = createSelector(metadataSelector, themeSelector, (metadata, theme) => metadata.tileProvider ?? theme.defaultTileProvider)
 

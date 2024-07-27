@@ -1,5 +1,5 @@
 package ru.eleventh.svmd.model.enums
 
 enum class TileProvider {
-    OSM, LIGHT, DARK, VOYAGER //,  LIGHT_NOLABELS, DARK_NOLABELS, SATELLITE, NORD
+    OSM, NORD, LIGHT, DARK, LIGHT_NO_LABELS, DARK_NO_LABELS, COLORFUL, SATELLITE
 }

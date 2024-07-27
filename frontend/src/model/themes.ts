@@ -1,6 +1,6 @@
 import {MantineThemeOverride} from "@mantine/styles/lib/theme/types";
-import {TileProvider} from "../model/model";
 import {DEFAULT_LEGEND_COLORS} from "../const";
+import {TileProvider} from "./tiles";
 
 type SvmdTheme = MantineThemeOverride & {
     defaultTileProvider: TileProvider
@@ -46,21 +46,19 @@ export const NORD_THEME: SvmdTheme = {
     legendColors: ["#a3be8c", "#bf616a", "#ebcb8b", "#b48ead", "#d08770", "#88c0d0", "#81a1c1", "#8fbcbb", "#5e81ac"]
 }
 
-// TODO: чатсть вещей (например, поиск и фон модалки) всё равно стилизуются как DARK. ты ж там-от не задаешь цвета
+export enum Theme { DARK = "DARK", LIGHT = "LIGHT", NORD = "NORD" }
 
-export const DEFAULT_THEME = DARK_THEME;
+export const DEFAULT_THEME = Theme.DARK;
 
-export enum Theme { DEFAULT = "DEFAULT", DARK = "DARK", LIGHT = "LIGHT", NORD = "NORD" }
-
-export const getTheme = (theme: string) => {
+export const resolveTheme = (theme: string) => {
     switch (theme) {
-        case "LIGHT":
+        case Theme.LIGHT:
             return LIGHT_THEME
-        case "DARK":
+        case Theme.DARK:
             return DARK_THEME
-        case "NORD":
+        case Theme.NORD:
             return NORD_THEME
         default:
-            return DEFAULT_THEME
+            return DARK_THEME
     }
 }

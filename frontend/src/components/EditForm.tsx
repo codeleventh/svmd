@@ -1,26 +1,31 @@
 import '../css/map/leaflet.css'
 import '../css/map/leaflet-overrides.css'
 
-import React, {useMemo, useState} from 'react'
-import {Button, ColorInput, Group, Select, TextInput} from "@mantine/core";
+import React, {useEffect, useMemo, useRef, useState} from 'react'
+import {Button, ColorInput, Grid, Group, Select, TextInput} from "@mantine/core";
 import {Link as LinkIcon, Photo} from "tabler-icons-react";
 import {useForm, zodResolver} from '@mantine/form';
 import {z} from 'zod';
 import {useHistory} from 'react-router-dom';
 import {IMapMeta, Lang} from "../model/model";
-import {Theme} from "./Themes";
-import {errorHandler, responseToNotification} from "./utils/apiUtils";
+import {DEFAULT_THEME, resolveTheme, Theme} from "../model/themes";
+import {responseToNotification} from "./utils/apiUtils";
 import {IApiResponse} from "../model/rests";
-import axios from "axios";
-import {defaultTo, equals, mergeWith, pipe, prop} from "ramda";
-import {DEFAULT_MAP_TITLE} from "../const";
+import {defaultTo, equals, mergeWith} from "ramda";
+import {DEFAULT_MAP_TITLE, MARKER_RADIUS} from "../const";
+import {CircleMarker, MapContainer, TileLayer, useMapEvent} from 'react-leaflet';
+import {CircleMarker as LeafletCircleMarker, LatLng, TileLayer as LeafletTileLayer} from "leaflet";
+import {resolveTile, TileProvider} from "../model/tiles";
 
 interface IProps {
     mapMeta: IMapMeta
+    onSubmit: (mapMeta: IMapMeta) => void
+    putResponse: IApiResponse<{}> | undefined
+    isLoading: boolean
 }
 
 export const EditForm: React.FC<IProps> = (props: IProps) => {
-    const {mapMeta} = props
+    const {mapMeta, onSubmit, putResponse, isLoading} = props
     const mapId = mapMeta.identifier
 
     const history = useHistory();
@@ -28,18 +33,12 @@ export const EditForm: React.FC<IProps> = (props: IProps) => {
         history.push(`/${mapId}`)
     }
 
-    const [putResponse, setPutResponse] = useState<IApiResponse<{}>>()
-    const onSubmit = (newMapMeta: IMapMeta) => {
-        axios.put(`/api/meta/${mapId}`, newMapMeta)
-            .then(pipe(prop('data'), setPutResponse))
-            .catch(pipe(errorHandler, setPutResponse))
-            .finally(() => setIsLoading(false))
-    }
-
     const defaults: Partial<IMapMeta> = {
         title: DEFAULT_MAP_TITLE,
+        theme: DEFAULT_THEME,
+        tileProvider: resolveTheme(DEFAULT_THEME).defaultTileProvider,
         lang: Lang.EN,
-        theme: Theme.DEFAULT
+        link: ''
     };
     const mapMetaWithDefaults = mergeWith(defaultTo, defaults, mapMeta);
 
@@ -50,15 +49,38 @@ export const EditForm: React.FC<IProps> = (props: IProps) => {
             logo: z.union([z.string().url('Некорректный формат ссылки'), z.null(), z.literal('')]),
         })),
     })
-
-    const [isLoading, setIsLoading] = useState(false)
     const isFormInvalid = useMemo(() => form.validate().hasErrors, [form.values])
 
-    const newMapMeta = useMemo(() => {
+    const [mapCenter, setMapCenter] = useState<LatLng>();
+    const tileLayerRef = useRef<LeafletTileLayer>(null)
+    const markerRef = useRef<LeafletCircleMarker>(null)
+
+    const MapClickHandler = () => {
+        const map = useMapEvent('click', e => {
+            setMapCenter(e.latlng)
+            map.setView(e.latlng, map.getZoom())
+            markerRef.current?.redraw()
+        })
+        return null
+    }
+    useEffect(() => {
+        if (tileLayerRef.current) {
+            tileLayerRef.current.setUrl(resolveTile(form.values.tileProvider));
+        }
+    }, [form.values.tileProvider]);
+    useEffect(() => {
+        if (!!markerRef.current) {
+            markerRef.current.options.color = form.values.defaultColor
+            markerRef.current.setStyle({color: form.values.defaultColor})
+        }
+    }, [markerRef.current, form.values.defaultColor])
+
+    const mapMetaForPut = useMemo(() => {
         const obj = Object.assign({}, mapMeta, form.values)
         Object.keys(obj).forEach((key) => {
             // @ts-ignore
-            if (obj[key] === '' || (equals(obj[key], defaults[key]) && equals(obj[key] !== mapMeta[key]))) {
+            // Getting the diff between old state and new state excluding default values
+            if (obj[key] === '' || (equals(obj[key], defaults[key]) && !equals(obj[key], mapMeta[key]))) {
                 obj[key] = null;
             }
         });
@@ -72,21 +94,77 @@ export const EditForm: React.FC<IProps> = (props: IProps) => {
             description="Будет показана в названии вкладки"
             {...form.getInputProps('title')}
         />
-        <Select
-            label="Язык интерфейса карты"
-            description="Будет использован в интерфейсе"
-            data={[
-                {value: 'EN', label: '🇬🇧 Английский'},
-                {value: 'RU', label: '🇷🇺 Русский'},
-            ]}
-            {...form.getInputProps('lang')}
-        />
-        <ColorInput label="Цвет точек и полигонов по умолчанию" {...form.getInputProps('defaultColor')} />
+        <Grid columns={2}>
+            <Grid.Col span={1}>
+                <Select
+                    label="Тема интерфейса"
+                    data={[
+                        {value: Theme.DARK, label: 'Темная'},
+                        {value: Theme.LIGHT, label: 'Светлая'},
+                    ]}
+                    {...form.getInputProps('theme')}
+                    allowDeselect={false}
+                    clearable={false}
+                />
+            </Grid.Col>
+            <Grid.Col span={1}>
+                <Select
+                    label="Язык интерфейса карты"
+                    data={[
+                        {value: 'EN', label: '🇬🇧 Английский'},
+                        {value: 'RU', label: '🇷🇺 Русский'},
+                    ]}
+                    {...form.getInputProps('lang')}
+                    allowDeselect={false}
+                    clearable={false}
+                />
+            </Grid.Col>
+        </Grid>
+        <Grid columns={2}>
+            <Grid.Col span={1}>
+                <Select
+                    label="Тема карты"
+                    data={[
+                        // {value: 'default', label: 'Как в теме'},
+                        {value: TileProvider.LIGHT, label: 'Светлая'},
+                        {value: TileProvider.DARK, label: 'Темная'},
+                        {value: TileProvider.OSM, label: 'OpenStreetMap'},
+                        {value: TileProvider.COLORFUL, label: 'Цветная'},
+                        // {value: TileProvider.NORD, label: 'Nord'},
+                        // {value: TileProvider.SATELLITE, label: 'Спутник'},
+                    ]}
+                    onChange={form.getInputProps('tileProvider').onChange}
+                    value={form.getInputProps('tileProvider').value}
+                    allowDeselect={false}
+                    clearable={false}
+                />
+            </Grid.Col>
+            <Grid.Col span={1}>
+                <ColorInput label="Цвет точек и полигонов по умолчанию" {...form.getInputProps('defaultColor')} />
+            </Grid.Col>
+        </Grid>
+
+        <MapContainer
+            center={[50.0, 80.0]}
+            zoom={3}
+            style={{border: '0px', borderRadius: '4px', width: "100%", height: "300px"}}
+        >
+            {
+                mapCenter &&
+                <CircleMarker
+                    color={form.values.defaultColor}
+                    radius={MARKER_RADIUS}
+                    center={mapCenter}
+                    ref={markerRef}
+                />
+            }
+            <TileLayer url={resolveTile(form.values.tileProvider)} ref={tileLayerRef}/>
+            <MapClickHandler/>
+        </MapContainer>
+
         <TextInput
             label="Ссылка на проект"
-            description={`Будет показана внизу на странице с картой (с текстом «О проекте „${
-                !!form.getInputProps('title').value
-            }“»)`}
+            description={`Будет показана внизу на странице с картой (с текстом «О проекте „${form.getInputProps('title').value}“») `}
             icon={<LinkIcon/>}
             {...form.getInputProps('link')}
         />
@@ -100,9 +178,9 @@ export const EditForm: React.FC<IProps> = (props: IProps) => {
             <Button
                 disabled={isLoading || isFormInvalid}
                 onClick={() => {
-                    setIsLoading(true)
-                    onSubmit(newMapMeta)
-                }}>Сохранить</Button>
+                    onSubmit(mapMetaForPut)
+                }}
+            >Сохранить</Button>
             <Button onClick={() => routeChange(mapId)}>Открыть карту</Button>
         </Group>
     </>

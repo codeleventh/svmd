@@ -2,17 +2,6 @@ import {Geometry, Point} from './types'
 
 export enum Lang { RU, EN }
 
-export enum TileProvider {
-    OSM = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    NORD = 'TODO: 1',
-    LIGHT = 'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-    DARK = 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png',
-    LIGHT_NO_LABELS = 'https://{s}.basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png',
-    DARK_NO_LABELS = 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}.png',
-    COLORFUL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
-    SATELLITE = 'TODO: 2',
-}
-
 export enum Directive {
     NAME = '#NAME',
     COLOR = '#COLOR',

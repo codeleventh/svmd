@@ -32,6 +32,7 @@ import {calculateBounds, calculateColor} from './mapUtils'
 
 import '../css/map/leaflet.css'
 import {splitTags} from '../util'
+import {resolveTile} from "../model/tiles";
 
 type Marker = (LeafletPolygon | LeafletCircleMarker);
 
@@ -139,7 +140,7 @@ export const Map: React.FC = () => {
                     }
                 }}>
                 <MapHeader/>
-                <TileLayer url={tileProvider}/>
+                <TileLayer url={resolveTile(tileProvider)}/>
                 {featureMarkers}
                 <Meerkat/>
             </MapContainer>
